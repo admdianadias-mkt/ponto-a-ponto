@@ -11,31 +11,34 @@
 <title>Ponto a Ponto</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Urbanist:wght@600;700;800&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>
-/* Layout: app de obra, mobile first. Cabeçalho fixo, abas por etapa (Planta, 3D, Materiais, Orçamento), cartões só onde há um objeto real (cômodo, documento). */
+/* Layout: app de obra, mobile first, com a marca do Vitor Dias (amarelo tomada + grafite). Faixa grafite no topo, abas por etapa, cartões só onde há um objeto real (cômodo, documento). */
 :root{
-  --bg:#EEF1F4; --surface:#FFFFFF; --surface-2:#E3E8ED; --ink:#16212C; --muted:#5A6774; --line:#D2DAE2;
-  --copper:#A9531D; --copper-ink:#FFFFFF; --copper-soft:#F5E4D7;
+  --bg:#F1F1EE; --surface:#FFFFFF; --surface-2:#E6E6E1; --ink:#1F1F1F; --muted:#5E5E58; --line:#D9D8D2;
+  --copper:#FFD52E; --copper-ink:#1F1F1F; --copper-soft:#FFF3BF; --accent-text:#7D5E00;
+  --brand-bg:#262626; --brand-ink:#FFFFFF; --brand-y:#FFD52E;
   --ok:#1E7F47; --ok-soft:#DDF0E4; --warn:#94620F; --warn-soft:#F7EACB; --bad:#B3362A; --bad-soft:#F7DEDA; --info:#2D5E8C; --info-soft:#DCE8F3;
-  --w-tug:#C8691F; --w-ilum:#C99A00; --w-int:#1F8C7A; --w-chuv:#D2382C; --w-ar:#7A55D0; --w-qd:#2A3440;
-  --scene:#DDE3E9; --paper:#FFFFFF; --paper-ink:#1B242D;
-  --f-display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --w-tug:#C8691F; --w-ilum:#D9A800; --w-int:#1F8C7A; --w-chuv:#D2382C; --w-ar:#7A55D0; --w-qd:#2A2A2A;
+  --scene:#E2E2DD; --paper:#FFFFFF; --paper-ink:#1F1F1F;
+  --f-display:"Urbanist","Trebuchet MS",system-ui,sans-serif;
   --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
   --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
   --r:10px;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#0E141A; --surface:#151E27; --surface-2:#1D2832; --ink:#E4EAF0; --muted:#94A2AF; --line:#283643;
-  --copper:#E68D52; --copper-ink:#1B0F07; --copper-soft:#3A2415;
+  --bg:#141414; --surface:#1D1D1D; --surface-2:#282828; --ink:#EDEDEA; --muted:#A3A39C; --line:#343432;
+  --copper:#FFD52E; --copper-ink:#1F1F1F; --copper-soft:#3A3210; --accent-text:#FFD52E;
+  --brand-bg:#0C0C0C;
   --ok:#5CC98A; --ok-soft:#173424; --warn:#E3B45A; --warn-soft:#3A2E14; --bad:#F07C6E; --bad-soft:#3D1D19; --info:#7FB3E3; --info-soft:#18293A;
-  --w-qd:#C9D3DC; --scene:#111921; --paper:#F7F8FA; --paper-ink:#1B242D; color-scheme:dark;
+  --w-qd:#D6D6D0; --scene:#121212; --paper:#F7F7F4; --paper-ink:#1F1F1F; color-scheme:dark;
 }}
 :root[data-theme="dark"]{
-  --bg:#0E141A; --surface:#151E27; --surface-2:#1D2832; --ink:#E4EAF0; --muted:#94A2AF; --line:#283643;
-  --copper:#E68D52; --copper-ink:#1B0F07; --copper-soft:#3A2415;
+  --bg:#141414; --surface:#1D1D1D; --surface-2:#282828; --ink:#EDEDEA; --muted:#A3A39C; --line:#343432;
+  --copper:#FFD52E; --copper-ink:#1F1F1F; --copper-soft:#3A3210; --accent-text:#FFD52E;
+  --brand-bg:#0C0C0C;
   --ok:#5CC98A; --ok-soft:#173424; --warn:#E3B45A; --warn-soft:#3A2E14; --bad:#F07C6E; --bad-soft:#3D1D19; --info:#7FB3E3; --info-soft:#18293A;
-  --w-qd:#C9D3DC; --scene:#111921; --paper:#F7F8FA; --paper-ink:#1B242D; color-scheme:dark;
+  --w-qd:#D6D6D0; --scene:#121212; --paper:#F7F7F4; --paper-ink:#1F1F1F; color-scheme:dark;
 }
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
@@ -44,13 +47,17 @@ h1,h2,h3{font-family:var(--f-display);font-weight:700;letter-spacing:.01em;line-
 h1{font-size:30px} h2{font-size:22px} h3{font-size:17px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
 p{margin:0}
 .num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
-:focus-visible{outline:2px solid var(--copper);outline-offset:2px}
+:focus-visible{outline:2px solid var(--accent-text);outline-offset:2px}
 
-.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
-.top-in{max-width:1100px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px;justify-content:space-between}
-.brand{display:flex;align-items:center;gap:10px;background:none;border:0;padding:0;cursor:pointer}
-.brand b{font-family:var(--f-display);font-size:22px;letter-spacing:.02em}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--brand-bg);color:var(--brand-ink);border-bottom:3px solid var(--brand-y)}
+.top-in{max-width:1100px;margin:0 auto;padding:8px 16px;display:flex;align-items:center;gap:12px;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:10px;background:none;border:0;padding:0;cursor:pointer;color:var(--brand-ink);text-align:left;min-width:0}
+.brand span{display:flex;flex-direction:column;line-height:1.05;min-width:0}
+.brand b{font-family:var(--f-display);font-size:21px;font-weight:800;letter-spacing:.01em}
+.brand small{font-size:12px;color:var(--brand-y);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .brand svg{flex:none}
+.top .btn.ghost{color:#D9D9D4}
+.top .btn.ghost:hover{color:var(--brand-y)}
 .wrap{max-width:1100px;margin:0 auto;padding-inline:16px;padding-block:20px 80px;display:flex;flex-direction:column;gap:20px}
 
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:0 14px;border-radius:8px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-weight:600;text-decoration:none;white-space:nowrap}
@@ -69,12 +76,12 @@ p{margin:0}
 
 input[type=text],input[type=number],input[type=tel],select,textarea{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-height:40px;width:100%;min-width:0}
 textarea{min-height:70px;resize:vertical}
-input:focus,select:focus,textarea:focus{border-color:var(--copper);outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--accent-text);outline:none}
 label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);font-weight:500;min-width:0}
 label.f > span{letter-spacing:.02em}
 .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
 .check{display:flex;align-items:center;gap:8px;cursor:pointer}
-.check input{width:18px;height:18px;accent-color:var(--copper)}
+.check input{width:18px;height:18px;accent-color:var(--accent-text)}
 
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:14px;min-width:0}
 .chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:2px 10px;font-size:12.5px;font-weight:600;white-space:nowrap}
@@ -84,7 +91,7 @@ label.f > span{letter-spacing:.02em}
 .st-andamento{background:var(--warn-soft);color:var(--warn)}
 .st-concluido{background:var(--surface-2);color:var(--muted)}
 .st-perdido{background:var(--bad-soft);color:var(--bad)}
-.tag-ex{background:var(--copper-soft);color:var(--copper)}
+.tag-ex{background:var(--copper-soft);color:var(--accent-text)}
 
 /* home */
 .hello{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between}
@@ -93,10 +100,10 @@ label.f > span{letter-spacing:.02em}
 .kpi{background:var(--surface);padding:14px 16px;display:flex;flex-direction:column;gap:2px}
 .kpi small{color:var(--muted);font-size:12.5px;text-transform:uppercase;letter-spacing:.06em;font-weight:600}
 .kpi b{font-family:var(--f-mono);font-size:22px;font-weight:500;font-variant-numeric:tabular-nums}
-.kpi.hl b{color:var(--copper)}
+.kpi.hl b{color:var(--accent-text)}
 .plist{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
 .pcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:10px;cursor:pointer;text-align:left;min-width:0}
-.pcard:hover{border-color:var(--copper)}
+.pcard:hover{border-color:var(--accent-text)}
 .pcard h2{font-size:21px;overflow-wrap:anywhere}
 .pcard .meta{display:flex;justify-content:space-between;gap:8px;font-size:13.5px;color:var(--muted);border-top:1px dashed var(--line);padding-top:10px}
 .pcard .meta b{color:var(--ink);font-family:var(--f-mono);font-weight:500}
@@ -109,7 +116,7 @@ label.f > span{letter-spacing:.02em}
 .phead{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between}
 .phead .t{display:flex;flex-direction:column;gap:2px;min-width:0}
 .phead h1{overflow-wrap:anywhere}
-.tabs{position:sticky;top:calc(env(safe-area-inset-top,0px) + 61px);z-index:15;display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface-2);border-radius:10px;padding:4px;gap:4px}
+.tabs{position:sticky;top:calc(env(safe-area-inset-top,0px) + 59px);z-index:15;display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface-2);border-radius:10px;padding:4px;gap:4px}
 .tab{border:0;background:transparent;border-radius:7px;min-height:40px;font-family:var(--f-display);font-weight:700;font-size:17px;letter-spacing:.03em;color:var(--muted);cursor:pointer}
 .tab[aria-selected=true]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
 .exbar{background:var(--copper-soft);color:var(--ink);border-radius:var(--r);padding:12px 14px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
@@ -117,12 +124,12 @@ label.f > span{letter-spacing:.02em}
 .planta-grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:16px;align-items:start}
 @media (max-width:860px){.planta-grid{grid-template-columns:minmax(0,1fr)}}
 .drop{border:2px dashed var(--line);border-radius:var(--r);padding:28px 16px;text-align:center;display:flex;flex-direction:column;gap:8px;align-items:center;cursor:pointer;background:var(--bg)}
-.drop:hover,.drop.over{border-color:var(--copper)}
-.drop svg{color:var(--copper)}
+.drop:hover,.drop.over{border-color:var(--accent-text)}
+.drop svg{color:var(--accent-text)}
 .planta-grid.desenhando{grid-template-columns:minmax(0,1fr)}
 .plsvg{display:block;width:100%;height:auto;max-height:78vh;background:#fff;border:1px solid var(--line);border-radius:8px;user-select:none;-webkit-user-select:none}
 .plsvg.ativo{touch-action:none;cursor:crosshair;outline:2px solid var(--info);outline-offset:-1px}
-.plsvg .sala rect{fill:rgba(169,83,29,.13);stroke:#A9531D}
+.plsvg .sala rect{fill:rgba(255,213,46,.28);stroke:#262626}
 .plsvg text{font-family:var(--f-display);font-weight:700;fill:#1B242D;stroke:#fff;paint-order:stroke;stroke-linejoin:round}
 .plsvg .escala line{stroke:#2D5E8C;stroke-linecap:round}
 .plsvg .escala circle{fill:#2D5E8C}
@@ -151,7 +158,7 @@ form.pend{display:flex;flex-direction:column;gap:10px;border:1px solid var(--inf
 .step button{width:32px;height:32px;border-radius:6px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-size:18px;line-height:1}
 .step output{min-width:24px;text-align:center;font-family:var(--f-mono)}
 .qdradio{font-size:13.5px;color:var(--muted)}
-.qdradio input{accent-color:var(--copper)}
+.qdradio input{accent-color:var(--accent-text)}
 
 /* 3D */
 .scene{position:relative;height:min(62vh,560px);min-height:320px;border-radius:var(--r);overflow:hidden;background:var(--scene);border:1px solid var(--line);touch-action:none}
@@ -177,7 +184,7 @@ table.mat{width:100%;border-collapse:collapse;min-width:620px}
 .mat .p input{width:92px;text-align:right}
 .mat td.sub{text-align:right;font-family:var(--f-mono);white-space:nowrap}
 .mat .adj{font-size:11.5px;color:var(--warn);background:var(--warn-soft);border-radius:4px;padding:1px 5px;border:0;cursor:pointer}
-.mat input[type=checkbox]{width:18px;height:18px;accent-color:var(--copper)}
+.mat input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent-text)}
 pre.msg{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--bg);border-radius:8px;padding:12px;font-family:var(--f-body);font-size:14px;margin:0;max-height:300px;overflow:auto}
 
 /* orçamento */
@@ -191,15 +198,22 @@ pre.msg{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--bg);border-
 .conta div b{font-family:var(--f-mono);font-weight:500;white-space:nowrap}
 .conta div.neg b{color:var(--bad)}
 .conta div.tot{border-bottom:0;font-weight:600}
-.conta div.tot b{color:var(--copper);font-size:18px}
+.conta div.tot b{color:var(--accent-text);font-size:18px}
 .paper{background:var(--paper);color:var(--paper-ink);border-radius:6px;padding:28px 24px;box-shadow:0 1px 3px rgba(0,0,0,.15),0 8px 24px rgba(0,0,0,.08);display:flex;flex-direction:column;gap:14px;font-size:14px}
 .paper h2{font-size:26px;color:var(--paper-ink)}
-.paper .ph{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:2px solid #A9531D;padding-bottom:12px}
+.paper .ph{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:4px solid #FFD52E;padding-bottom:12px}
 .paper .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#66717C;font-weight:600}
 .paper table{width:100%;border-collapse:collapse}
 .paper td{padding:6px 0;border-bottom:1px solid #E1E5E9}
 .paper td:last-child{text-align:right;font-family:var(--f-mono);white-space:nowrap}
-.paper .tot td{border-bottom:0;font-weight:700;font-size:17px;color:#A9531D}
+.paper .tot td{border-bottom:0;font-weight:700;font-size:17px;background:#FFD52E;color:#1F1F1F;padding:8px 10px}
+
+.paper .ph{align-items:center}
+.paper .pmarca{display:flex;gap:12px;align-items:center;min-width:0}
+.paper .pnome{font-family:var(--f-display);font-size:21px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;line-height:1.1}
+.paper .pslog{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#66717C;margin-bottom:2px}
+.paper .p24{display:inline-block;background:#262626;color:#FFD52E;font-size:11px;font-weight:700;border-radius:4px;padding:1px 6px;margin-top:4px}
+.paper .tot td:last-child{padding-right:10px}
 
 /* config */
 .precos{display:flex;flex-direction:column}
@@ -207,9 +221,9 @@ pre.msg{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--bg);border-
 .precos .pr input{text-align:right}
 .precos h3{margin-top:14px}
 
-#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:50;background:var(--ink);color:var(--bg);padding:10px 14px;border-radius:10px;display:flex;gap:12px;align-items:center;max-width:calc(100% - 32px);font-size:14.5px;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:50;background:var(--brand-bg);color:#fff;padding:10px 14px;border-radius:10px;display:flex;gap:12px;align-items:center;max-width:calc(100% - 32px);font-size:14.5px;box-shadow:0 6px 20px rgba(0,0,0,.25)}
 #toast[hidden],pre.msg[hidden]{display:none}
-#toast button{background:none;border:0;color:var(--copper);font-weight:700;cursor:pointer;filter:brightness(1.3)}
+#toast button{background:none;border:0;color:var(--brand-y);font-weight:700;cursor:pointer}
 .load{display:flex;align-items:center;gap:10px;color:var(--muted);padding:20px 0}
 .spin{width:18px;height:18px;border-radius:50%;border:2px solid var(--line);border-top-color:var(--copper);animation:sp 0.8s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
@@ -228,8 +242,8 @@ pre.msg{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--bg);border-
 <body>
 <header class="top"><div class="top-in">
   <button class="brand" data-go="home" aria-label="Ponto a Ponto, voltar aos projetos">
-    <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect x="5" y="2" width="20" height="26" rx="3" fill="var(--copper)"/><rect x="10" y="7" width="10" height="16" rx="2" fill="var(--surface)"/><rect x="11.5" y="8.5" width="7" height="7" rx="1.2" fill="var(--ink)"/></svg>
-    <b>Ponto a Ponto</b>
+    <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="20" fill="#FFD52E"/><circle cx="20" cy="20" r="14.5" fill="none" stroke="#262626" stroke-width="1.4"/><rect x="15.2" y="8.5" width="2.6" height="6" rx="1.2" fill="#262626"/><rect x="22.2" y="8.5" width="2.6" height="6" rx="1.2" fill="#262626"/><path d="M12.5 14h15v4.5a7.5 7.5 0 0 1-5 7v2.5h-5v-2.5a7.5 7.5 0 0 1-5-7z" fill="#262626"/><path d="M20 28v6" stroke="#262626" stroke-width="1.6" stroke-linecap="round"/></svg>
+    <span><b>Ponto a Ponto</b><small id="marca">Vitor Dias · Elétrica</small></span>
   </button>
   <button class="btn ghost small" data-go="config">Preços e seus dados</button>
 </div></header>
@@ -434,7 +448,8 @@ function salvar(p){if(!p||p.exemplo)return;p.atualizado=Date.now();clearTimeout(
 function salvarPerfil(){clearTimeout(timers._pf);timers._pf=setTimeout(()=>enfileirar('_pf',()=>Store.salvarPerfil(S.perfil)),600)}
 
 /* ============ Estado ============ */
-const S={perfil:{nome:'',empresa:'',telefone:'',cidade:'',precos:{},orcPadrao:null},projetos:[],view:'home',atual:null,aba:'planta',carregado:false,
+// dados do Vitor Dias já preenchidos (dá para mudar em "Preços e seus dados")
+const S={perfil:{nome:'Vitor Dias',empresa:'',slogan:'Serviços de instalação e manutenção elétrica',telefone:'(34) 99905-3756',cidade:'Belo Horizonte e região',atende24h:true,precos:{},orcPadrao:null},projetos:[],view:'home',atual:null,aba:'planta',carregado:false,
   plantas:{},dims:{},desenho:null,pend:null,ai:{fn:null,img:false,rodando:false,ctl:null,status:''},dl:null,novo:false,apagar:false,envio:{fone:'',precos:true},foneCliente:''};
 
 function demo(){
@@ -474,6 +489,7 @@ function toast(msg,acao){const t=$('#toast');t.innerHTML=`<span>${esc(msg)}</spa
 function render(){
   const a=document.activeElement,fid=a&&a.id;
   if(S.view!=='projeto'||S.aba!=='3d')soltar3D();
+  const mc=$('#marca');if(mc)mc.textContent=(S.perfil.empresa||S.perfil.nome||'Seu nome')+' · Elétrica';
   const app=$('#app');
   if(!S.carregado)app.innerHTML='<div class="load"><div class="spin"></div>Carregando seus projetos…</div>';
   else if(S.view==='home')app.innerHTML=vHome();
@@ -863,11 +879,16 @@ function descServico(p,R){
   if(R.calc.circuitos)s+=`. Montagem do quadro com ${plural(R.calc.circuitos,'circuito')}, disjuntor geral, DR e DPS, e aterramento`;
   return s+'.';
 }
+const LOGO=`<svg width="46" height="46" viewBox="0 0 40 40" aria-hidden="true" style="flex:none"><circle cx="20" cy="20" r="20" fill="#FFD52E"/><circle cx="20" cy="20" r="14.5" fill="none" stroke="#262626" stroke-width="1.4"/><rect x="15.2" y="8.5" width="2.6" height="6" rx="1.2" fill="#262626"/><rect x="22.2" y="8.5" width="2.6" height="6" rx="1.2" fill="#262626"/><path d="M12.5 14h15v4.5a7.5 7.5 0 0 1-5 7v2.5h-5v-2.5a7.5 7.5 0 0 1-5-7z" fill="#262626"/><path d="M20 28v6" stroke="#262626" stroke-width="1.6" stroke-linecap="round"/></svg>`;
+function cabecalhoMarca(pf){
+  return `<div class="pmarca">${LOGO}<div><div class="pnome">${esc(pf.empresa||pf.nome||'Seu nome ou empresa')}</div>${pf.slogan?`<div class="pslog">${esc(pf.slogan)}</div>`:''}
+    <div>${esc(pf.telefone||'')}${pf.telefone&&pf.cidade?' · ':''}${esc(pf.cidade||'')}</div>${pf.atende24h?'<span class="p24">Atendimento 24h</span>':''}</div></div>`;
+}
 function vPapel(p,R){
   const O=R.orc,o=O.o,pf=S.perfil;
   return `<div class="paper" aria-label="Prévia do orçamento">
-   <div class="ph"><div><div class="lbl">Orçamento</div><h2>${esc(p.numero)}</h2><div>${hoje()}</div></div>
-    <div style="text-align:right"><strong>${esc(pf.empresa||pf.nome||'Seu nome ou empresa')}</strong>${pf.empresa&&pf.nome?`<div>${esc(pf.nome)}</div>`:''}<div>${esc(pf.telefone||'')}</div><div>${esc(pf.cidade||'')}</div></div></div>
+   <div class="ph">${cabecalhoMarca(pf)}
+    <div style="text-align:right"><div class="lbl">Orçamento</div><h2>${esc(p.numero)}</h2><div>${hoje()}</div></div></div>
    ${!pf.nome&&!pf.empresa?`<p class="small" style="color:#94620F">Coloque seu nome e telefone em "Preços e seus dados" para aparecerem aqui.</p>`:''}
    <div><div class="lbl">Cliente</div><div>${esc(p.cliente||'—')}</div><div>${esc(p.endereco||'')}</div></div>
    <div><div class="lbl">Serviço</div><p>${esc(descServico(p,R))}</p></div>
@@ -884,7 +905,7 @@ function vPapel(p,R){
 function textoOrcamento(p,R){
   const O=R.orc,o=O.o,pf=S.perfil;
   let s=`*Orçamento ${p.numero}*\n`;
-  if(pf.empresa||pf.nome)s+=`${pf.empresa||pf.nome}${pf.telefone?' · '+pf.telefone:''}\n`;
+  if(pf.empresa||pf.nome)s+=`⚡ ${pf.empresa||pf.nome}${pf.slogan?' · '+pf.slogan:''}\n${pf.telefone||''}${pf.telefone&&pf.cidade?' · ':''}${pf.cidade||''}${pf.atende24h?' · Atendimento 24h':''}\n`;
   s+=`\nCliente: ${p.cliente||'—'}\n`;if(p.endereco)s+=`Endereço: ${p.endereco}\n`;
   s+=`\n*Serviço*\n${descServico(p,R)}\n\nMão de obra: ${brl(O.mo)}\n`;
   s+=o.incluirMaterial?`Material: ${brl(O.matVenda)}\n`:`Material: por conta do cliente (mando a lista)\n`;
@@ -898,12 +919,13 @@ function htmlOrcamento(p,R){
   const mat=o.incluirMaterial?'':`<h3>Lista de material</h3><table>${R.itens.filter(i=>i.sel).map(i=>`<tr><td>${esc(i.nome)}</td><td>${fmt(i.qtd,2)} ${esc(i.un)}</td></tr>`).join('')}</table>`;
   return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Orçamento ${esc(p.numero)}</title>
 <style>body{font-family:Arial,Helvetica,sans-serif;color:#1B242D;max-width:720px;margin:32px auto;padding:0 20px;font-size:14px;line-height:1.5}
-.h{display:flex;justify-content:space-between;gap:16px;border-bottom:3px solid #A9531D;padding-bottom:12px;margin-bottom:18px}
+.h{display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px;border-bottom:5px solid #FFD52E;padding-bottom:14px;margin-bottom:18px}
 h1{margin:0;font-size:26px}h3{margin:22px 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:#66717C}
+.pmarca{display:flex;gap:12px;align-items:center}.pnome{font-size:22px;font-weight:800;letter-spacing:.03em;text-transform:uppercase}.pslog{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#66717C}
+.p24{display:inline-block;background:#262626;color:#FFD52E;font-size:11px;font-weight:700;border-radius:4px;padding:1px 6px;margin-top:3px}
 table{width:100%;border-collapse:collapse}td{padding:7px 0;border-bottom:1px solid #E1E5E9}td:last-child{text-align:right;white-space:nowrap}
-.t td{font-weight:bold;font-size:18px;color:#A9531D;border:0}.ass{margin-top:60px;display:flex;gap:40px}.ass div{flex:1;border-top:1px solid #999;padding-top:6px;text-align:center;color:#66717C}</style></head><body>
-<div class="h"><div><div style="color:#66717C;font-size:12px;letter-spacing:.08em;text-transform:uppercase">Orçamento</div><h1>${esc(p.numero)}</h1><div>${hoje()}</div></div>
-<div style="text-align:right"><strong>${esc(pf.empresa||pf.nome||'')}</strong><div>${esc(pf.empresa&&pf.nome?pf.nome:'')}</div><div>${esc(pf.telefone||'')}</div><div>${esc(pf.cidade||'')}</div></div></div>
+.t td{font-weight:bold;font-size:18px;background:#FFD52E;color:#1F1F1F;border:0;padding:9px 10px}.ass{margin-top:60px;display:flex;gap:40px}.ass div{flex:1;border-top:1px solid #999;padding-top:6px;text-align:center;color:#66717C}</style></head><body>
+<div class="h">${cabecalhoMarca(pf)}<div style="text-align:right"><div style="color:#66717C;font-size:12px;letter-spacing:.08em;text-transform:uppercase">Orçamento</div><h1>${esc(p.numero)}</h1><div>${hoje()}</div></div></div>
 <h3>Cliente</h3><div>${esc(p.cliente||'—')}</div><div>${esc(p.endereco||'')}</div>
 <h3>Serviço</h3><p>${esc(descServico(p,R))}</p>
 <h3>Valores</h3><table><tr><td>Mão de obra</td><td>${brl(O.mo)}</td></tr><tr><td>${o.incluirMaterial?'Material':'Material por conta do cliente'}</td><td>${o.incluirMaterial?brl(O.matVenda):'—'}</td></tr>
@@ -928,7 +950,9 @@ function vConfig(){
      <label class="f"><span>Seu nome</span><input type="text" id="pf_nome" data-f="pf:nome" value="${esc(pf.nome)}"></label>
      <label class="f"><span>Empresa (opcional)</span><input type="text" id="pf_emp" data-f="pf:empresa" value="${esc(pf.empresa)}"></label>
      <label class="f"><span>Telefone / WhatsApp</span><input type="tel" id="pf_tel" data-f="pf:telefone" value="${esc(pf.telefone)}"></label>
-     <label class="f"><span>Cidade</span><input type="text" id="pf_cid" data-f="pf:cidade" value="${esc(pf.cidade)}"></label></div></div>
+     <label class="f"><span>Cidade ou região</span><input type="text" id="pf_cid" data-f="pf:cidade" value="${esc(pf.cidade)}"></label>
+     <label class="f" style="grid-column:1 / -1"><span>Frase do seu serviço</span><input type="text" id="pf_slogan" data-f="pf:slogan" value="${esc(pf.slogan||'')}"></label></div>
+     <label class="check"><input type="checkbox" id="pf_24h" data-f="pf:atende24h" ${pf.atende24h?'checked':''}>Mostrar "Atendimento 24h" no orçamento</label></div>
     <div class="panel"><h2>Seus valores de mão de obra</h2><p class="small muted">Valem para os projetos novos. Em cada projeto dá para mudar.</p><div class="grid2">
      ${cp('valorPonto','Por ponto (R$)')}${cp('valorEspecial','Chuveiro ou ar (R$)')}${cp('valorQuadro','Montagem do quadro (R$)')}${cp('valorDiaria','Diária (R$)')}${cp('pontosDia','Pontos por dia')}${cp('valorAjudante','Diária do ajudante (R$)')}${cp('gastoDia','Transporte e comida por dia (R$)')}</div></div>
     <div class="panel"><h2>Cópia de segurança</h2>
@@ -1106,7 +1130,7 @@ document.addEventListener('change',e=>{
       else o[k]=Math.max(0,num(val));
       if(k==='pontosDia'&&!o[k])o[k]=1;salvar(p);break}
     case 'envio':S.envio[parts[1]]=val;break;
-    case 'pf':S.perfil[parts[1]]=String(val).trim();salvarPerfil();break;
+    case 'pf':S.perfil[parts[1]]=typeof val==='boolean'?val:String(val).trim();salvarPerfil();break;
     case 'op':S.perfil.orcPadrao=Object.assign({},S.perfil.orcPadrao||{},{[parts[1]]:Math.max(0,num(val))});salvarPerfil();break;
   }
   render();
