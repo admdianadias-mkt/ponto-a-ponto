@@ -1,0 +1,1149 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="App para eletricistas: planta, visÃ£o 3D, lista de material, dias de trabalho e orÃ§amento para o WhatsApp.">
+<meta name="theme-color" content="#A9531D">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Crect x='5' y='2' width='20' height='26' rx='3' fill='%23A9531D'/%3E%3Crect x='10' y='7' width='10' height='16' rx='2' fill='white'/%3E%3Crect x='11.5' y='8.5' width='7' height='7' rx='1.2' fill='%2316212C'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Crect x='5' y='2' width='20' height='26' rx='3' fill='%23A9531D'/%3E%3Crect x='10' y='7' width='10' height='16' rx='2' fill='white'/%3E%3Crect x='11.5' y='8.5' width='7' height='7' rx='1.2' fill='%2316212C'/%3E%3C/svg%3E">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Ponto a Ponto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: app de obra, mobile first. Cabeçalho fixo, abas por etapa (Planta, 3D, Materiais, Orçamento), cartões só onde há um objeto real (cômodo, documento). */
+:root{
+  --bg:#EEF1F4; --surface:#FFFFFF; --surface-2:#E3E8ED; --ink:#16212C; --muted:#5A6774; --line:#D2DAE2;
+  --copper:#A9531D; --copper-ink:#FFFFFF; --copper-soft:#F5E4D7;
+  --ok:#1E7F47; --ok-soft:#DDF0E4; --warn:#94620F; --warn-soft:#F7EACB; --bad:#B3362A; --bad-soft:#F7DEDA; --info:#2D5E8C; --info-soft:#DCE8F3;
+  --w-tug:#C8691F; --w-ilum:#C99A00; --w-int:#1F8C7A; --w-chuv:#D2382C; --w-ar:#7A55D0; --w-qd:#2A3440;
+  --scene:#DDE3E9; --paper:#FFFFFF; --paper-ink:#1B242D;
+  --f-display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E141A; --surface:#151E27; --surface-2:#1D2832; --ink:#E4EAF0; --muted:#94A2AF; --line:#283643;
+  --copper:#E68D52; --copper-ink:#1B0F07; --copper-soft:#3A2415;
+  --ok:#5CC98A; --ok-soft:#173424; --warn:#E3B45A; --warn-soft:#3A2E14; --bad:#F07C6E; --bad-soft:#3D1D19; --info:#7FB3E3; --info-soft:#18293A;
+  --w-qd:#C9D3DC; --scene:#111921; --paper:#F7F8FA; --paper-ink:#1B242D; color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0E141A; --surface:#151E27; --surface-2:#1D2832; --ink:#E4EAF0; --muted:#94A2AF; --line:#283643;
+  --copper:#E68D52; --copper-ink:#1B0F07; --copper-soft:#3A2415;
+  --ok:#5CC98A; --ok-soft:#173424; --warn:#E3B45A; --warn-soft:#3A2E14; --bad:#F07C6E; --bad-soft:#3D1D19; --info:#7FB3E3; --info-soft:#18293A;
+  --w-qd:#C9D3DC; --scene:#111921; --paper:#F7F8FA; --paper-ink:#1B242D; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3{font-family:var(--f-display);font-weight:700;letter-spacing:.01em;line-height:1.1;margin:0;text-wrap:balance}
+h1{font-size:30px} h2{font-size:22px} h3{font-size:17px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+p{margin:0}
+.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--copper);outline-offset:2px}
+
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
+.top-in{max-width:1100px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:10px;background:none;border:0;padding:0;cursor:pointer}
+.brand b{font-family:var(--f-display);font-size:22px;letter-spacing:.02em}
+.brand svg{flex:none}
+.wrap{max-width:1100px;margin:0 auto;padding-inline:16px;padding-block:20px 80px;display:flex;flex-direction:column;gap:20px}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:0 14px;border-radius:8px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-weight:600;text-decoration:none;white-space:nowrap}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--copper);border-color:var(--copper);color:var(--copper-ink)}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.zap{background:#1F8F4E;border-color:#1F8F4E;color:#fff}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--muted)}
+.btn.ghost:hover{color:var(--ink)}
+.btn.small{min-height:32px;padding:0 10px;font-size:14px}
+.btn.danger{color:var(--bad)}
+.btn[disabled]{opacity:.55;cursor:not-allowed}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+
+input[type=text],input[type=number],input[type=tel],select,textarea{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-height:40px;width:100%;min-width:0}
+textarea{min-height:70px;resize:vertical}
+input:focus,select:focus,textarea:focus{border-color:var(--copper);outline:none}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);font-weight:500;min-width:0}
+label.f > span{letter-spacing:.02em}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.check{display:flex;align-items:center;gap:8px;cursor:pointer}
+.check input{width:18px;height:18px;accent-color:var(--copper)}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:2px 10px;font-size:12.5px;font-weight:600;white-space:nowrap}
+.chip::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.st-orcamento{background:var(--info-soft);color:var(--info)}
+.st-aprovado{background:var(--ok-soft);color:var(--ok)}
+.st-andamento{background:var(--warn-soft);color:var(--warn)}
+.st-concluido{background:var(--surface-2);color:var(--muted)}
+.st-perdido{background:var(--bad-soft);color:var(--bad)}
+.tag-ex{background:var(--copper-soft);color:var(--copper)}
+
+/* home */
+.hello{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between}
+.hello p{max-width:60ch;color:var(--muted);margin-top:6px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.kpi{background:var(--surface);padding:14px 16px;display:flex;flex-direction:column;gap:2px}
+.kpi small{color:var(--muted);font-size:12.5px;text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.kpi b{font-family:var(--f-mono);font-size:22px;font-weight:500;font-variant-numeric:tabular-nums}
+.kpi.hl b{color:var(--copper)}
+.plist{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.pcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:10px;cursor:pointer;text-align:left;min-width:0}
+.pcard:hover{border-color:var(--copper)}
+.pcard h2{font-size:21px;overflow-wrap:anywhere}
+.pcard .meta{display:flex;justify-content:space-between;gap:8px;font-size:13.5px;color:var(--muted);border-top:1px dashed var(--line);padding-top:10px}
+.pcard .meta b{color:var(--ink);font-family:var(--f-mono);font-weight:500}
+.newform{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.storenote{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok);display:inline-block}
+.dot.off{background:var(--warn)}
+
+/* projeto */
+.phead{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between}
+.phead .t{display:flex;flex-direction:column;gap:2px;min-width:0}
+.phead h1{overflow-wrap:anywhere}
+.tabs{position:sticky;top:calc(env(safe-area-inset-top,0px) + 61px);z-index:15;display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface-2);border-radius:10px;padding:4px;gap:4px}
+.tab{border:0;background:transparent;border-radius:7px;min-height:40px;font-family:var(--f-display);font-weight:700;font-size:17px;letter-spacing:.03em;color:var(--muted);cursor:pointer}
+.tab[aria-selected=true]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.exbar{background:var(--copper-soft);color:var(--ink);border-radius:var(--r);padding:12px 14px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+
+.planta-grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:16px;align-items:start}
+@media (max-width:860px){.planta-grid{grid-template-columns:minmax(0,1fr)}}
+.drop{border:2px dashed var(--line);border-radius:var(--r);padding:28px 16px;text-align:center;display:flex;flex-direction:column;gap:8px;align-items:center;cursor:pointer;background:var(--bg)}
+.drop:hover,.drop.over{border-color:var(--copper)}
+.drop svg{color:var(--copper)}
+.planta-grid.desenhando{grid-template-columns:minmax(0,1fr)}
+.plsvg{display:block;width:100%;height:auto;max-height:78vh;background:#fff;border:1px solid var(--line);border-radius:8px;user-select:none;-webkit-user-select:none}
+.plsvg.ativo{touch-action:none;cursor:crosshair;outline:2px solid var(--info);outline-offset:-1px}
+.plsvg .sala rect{fill:rgba(169,83,29,.13);stroke:#A9531D}
+.plsvg text{font-family:var(--f-display);font-weight:700;fill:#1B242D;stroke:#fff;paint-order:stroke;stroke-linejoin:round}
+.plsvg .escala line{stroke:#2D5E8C;stroke-linecap:round}
+.plsvg .escala circle{fill:#2D5E8C}
+.plsvg .escala text{fill:#2D5E8C}
+.plsvg .tmp{fill:rgba(45,94,140,.16);stroke:#2D5E8C;stroke-linecap:round}
+.drawbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.seg button[disabled]{opacity:.45;cursor:not-allowed}
+.dica{font-size:14px;background:var(--info-soft);color:var(--ink);border-radius:8px;padding:8px 12px}
+form.pend{display:flex;flex-direction:column;gap:10px;border:1px solid var(--info);border-radius:8px;padding:12px;background:var(--surface)}
+.plantaimg{border-radius:8px;border:1px solid var(--line);background:#fff;max-height:420px;width:100%;object-fit:contain}
+.aibox{border-radius:8px;padding:12px;background:var(--surface-2);display:flex;flex-direction:column;gap:8px}
+.aistatus{font-size:14px;color:var(--muted);white-space:pre-wrap;overflow-wrap:anywhere}
+.resumo{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14px;color:var(--muted)}
+.resumo b{color:var(--ink);font-family:var(--f-mono);font-weight:500}
+.rooms{display:flex;flex-direction:column;gap:10px}
+.room{border:1px solid var(--line);border-radius:var(--r);padding:12px;display:flex;flex-direction:column;gap:10px;background:var(--surface)}
+.room-top{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,150px) auto;gap:8px;align-items:center}
+.room-top input{font-weight:600}
+.dims{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:14px;color:var(--muted)}
+.dims input{width:78px;text-align:right}
+.dims .area{margin-left:auto;font-family:var(--f-mono);color:var(--ink)}
+.steps{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:6px}
+.step{display:flex;align-items:center;gap:4px;background:var(--bg);border-radius:8px;padding:4px 4px 4px 10px}
+.step span{flex:1;font-size:13.5px;display:flex;align-items:center;gap:6px;min-width:0}
+.step i{width:9px;height:9px;border-radius:50%;flex:none}
+.step button{width:32px;height:32px;border-radius:6px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-size:18px;line-height:1}
+.step output{min-width:24px;text-align:center;font-family:var(--f-mono)}
+.qdradio{font-size:13.5px;color:var(--muted)}
+.qdradio input{accent-color:var(--copper)}
+
+/* 3D */
+.scene{position:relative;height:min(62vh,560px);min-height:320px;border-radius:var(--r);overflow:hidden;background:var(--scene);border:1px solid var(--line);touch-action:none}
+.scene canvas{display:block;width:100%;height:100%;cursor:grab}
+.scene canvas:active{cursor:grabbing}
+.scene .hint{position:absolute;left:10px;bottom:10px;font-size:12.5px;color:var(--muted);background:var(--surface);padding:4px 8px;border-radius:6px;opacity:.9;pointer-events:none}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:13.5px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+.vazio{padding:32px 16px;text-align:center;color:var(--muted)}
+
+/* materiais */
+.mtop{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center}
+.mtotal{font-family:var(--f-mono);font-size:24px}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+table.mat{width:100%;border-collapse:collapse;min-width:620px}
+.mat th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:left;padding:10px 10px;border-bottom:1px solid var(--line);font-weight:600}
+.mat td{padding:6px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+.mat tr.cat td{background:var(--surface-2);font-family:var(--f-display);font-weight:700;font-size:15px;letter-spacing:.05em;text-transform:uppercase;padding:6px 10px}
+.mat tr.off td:not(:first-child){opacity:.45}
+.mat .q{display:flex;align-items:center;gap:6px}
+.mat .q input{width:78px;text-align:right}
+.mat .p input{width:92px;text-align:right}
+.mat td.sub{text-align:right;font-family:var(--f-mono);white-space:nowrap}
+.mat .adj{font-size:11.5px;color:var(--warn);background:var(--warn-soft);border-radius:4px;padding:1px 5px;border:0;cursor:pointer}
+.mat input[type=checkbox]{width:18px;height:18px;accent-color:var(--copper)}
+pre.msg{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--bg);border-radius:8px;padding:12px;font-family:var(--f-body);font-size:14px;margin:0;max-height:300px;overflow:auto}
+
+/* orçamento */
+.og{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:900px){.og{grid-template-columns:minmax(0,1fr)}}
+.seg{display:inline-grid;grid-auto-flow:column;background:var(--surface-2);border-radius:8px;padding:3px;gap:3px}
+.seg button{border:0;background:transparent;border-radius:6px;padding:6px 12px;cursor:pointer;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed=true]{background:var(--surface);color:var(--ink)}
+.conta{display:flex;flex-direction:column}
+.conta div{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px dashed var(--line);font-size:14.5px}
+.conta div b{font-family:var(--f-mono);font-weight:500;white-space:nowrap}
+.conta div.neg b{color:var(--bad)}
+.conta div.tot{border-bottom:0;font-weight:600}
+.conta div.tot b{color:var(--copper);font-size:18px}
+.paper{background:var(--paper);color:var(--paper-ink);border-radius:6px;padding:28px 24px;box-shadow:0 1px 3px rgba(0,0,0,.15),0 8px 24px rgba(0,0,0,.08);display:flex;flex-direction:column;gap:14px;font-size:14px}
+.paper h2{font-size:26px;color:var(--paper-ink)}
+.paper .ph{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:2px solid #A9531D;padding-bottom:12px}
+.paper .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#66717C;font-weight:600}
+.paper table{width:100%;border-collapse:collapse}
+.paper td{padding:6px 0;border-bottom:1px solid #E1E5E9}
+.paper td:last-child{text-align:right;font-family:var(--f-mono);white-space:nowrap}
+.paper .tot td{border-bottom:0;font-weight:700;font-size:17px;color:#A9531D}
+
+/* config */
+.precos{display:flex;flex-direction:column}
+.precos .pr{display:grid;grid-template-columns:minmax(0,1fr) 130px;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
+.precos .pr input{text-align:right}
+.precos h3{margin-top:14px}
+
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:50;background:var(--ink);color:var(--bg);padding:10px 14px;border-radius:10px;display:flex;gap:12px;align-items:center;max-width:calc(100% - 32px);font-size:14.5px;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+#toast[hidden],pre.msg[hidden]{display:none}
+#toast button{background:none;border:0;color:var(--copper);font-weight:700;cursor:pointer;filter:brightness(1.3)}
+.load{display:flex;align-items:center;gap:10px;color:var(--muted);padding:20px 0}
+.spin{width:18px;height:18px;border-radius:50%;border:2px solid var(--line);border-top-color:var(--copper);animation:sp 0.8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation:none}}
+@media (max-width:560px){
+  h1{font-size:26px}
+  .tab{font-size:15px}
+  .room-top{grid-template-columns:minmax(0,1fr) auto}
+  .room-top select{grid-column:1 / -1;grid-row:2}
+}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+
+</head>
+<body>
+<header class="top"><div class="top-in">
+  <button class="brand" data-go="home" aria-label="Ponto a Ponto, voltar aos projetos">
+    <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect x="5" y="2" width="20" height="26" rx="3" fill="var(--copper)"/><rect x="10" y="7" width="10" height="16" rx="2" fill="var(--surface)"/><rect x="11.5" y="8.5" width="7" height="7" rx="1.2" fill="var(--ink)"/></svg>
+    <b>Ponto a Ponto</b>
+  </button>
+  <button class="btn ghost small" data-go="config">Preços e seus dados</button>
+</div></header>
+<main class="wrap" id="app"><div class="load"><div class="spin"></div>Carregando seus projetos…</div></main>
+<div id="toast" hidden></div>
+<input type="file" id="fileplanta" accept="image/*,application/pdf" hidden>
+
+<script>
+/* ============ Dados de referência ============ */
+const TIPOS={sala:'Sala',quarto:'Quarto',cozinha:'Cozinha',banheiro:'Banheiro',servico:'Área de serviço',varanda:'Varanda',garagem:'Garagem',corredor:'Corredor',escritorio:'Escritório',outro:'Outro'};
+const MOLHADAS=['cozinha','servico'];
+const STATUS={orcamento:'Orçamento',aprovado:'Aprovado',andamento:'Em andamento',concluido:'Concluído',perdido:'Não fechou'};
+// id, categoria, nome, unidade, preço de referência (R$)
+const CAT=[
+ ['cabo15','Cabos','Cabo flexível 1,5 mm² (iluminação)','m',2.2],
+ ['cabo25','Cabos','Cabo flexível 2,5 mm² (tomadas)','m',3.4],
+ ['cabo4','Cabos','Cabo flexível 4 mm² (ar-condicionado)','m',5.6],
+ ['cabo6','Cabos','Cabo flexível 6 mm² (chuveiro)','m',8.3],
+ ['cabo10','Cabos','Cabo flexível 10 mm² (entrada e terra)','m',13.5],
+ ['eletroduto','Tubulação','Eletroduto corrugado 3/4"','m',2.8],
+ ['cx42','Caixas','Caixa de luz 4x2','un',2.5],
+ ['cx44','Caixas','Caixa de luz 4x4','un',4.2],
+ ['cxoct','Caixas','Caixa octogonal de laje 4x4','un',4.8],
+ ['tom10','Acabamento','Tomada 2P+T 10A com placa','un',14.9],
+ ['tom20','Acabamento','Tomada 2P+T 20A com placa','un',17.9],
+ ['int1','Acabamento','Interruptor simples com placa','un',13.5],
+ ['plafon','Acabamento','Plafon com lâmpada LED','un',24],
+ ['saidafio','Acabamento','Placa com saída de fio (chuveiro/ar)','un',9.5],
+ ['qd12','Quadro','Quadro de distribuição 12 disjuntores','un',95],
+ ['qd18','Quadro','Quadro de distribuição 18 disjuntores','un',135],
+ ['qd24','Quadro','Quadro de distribuição 24 disjuntores','un',189],
+ ['qd36','Quadro','Quadro de distribuição 36 disjuntores','un',290],
+ ['djgeral','Quadro','Disjuntor geral bipolar 63A','un',75],
+ ['dr','Quadro','Interruptor diferencial DR 63A 30mA','un',185],
+ ['dps','Quadro','DPS 20kA 275V','un',62],
+ ['dj10','Quadro','Disjuntor unipolar 10A','un',15.9],
+ ['dj20','Quadro','Disjuntor unipolar 20A','un',15.9],
+ ['dj20b','Quadro','Disjuntor bipolar 20A','un',54],
+ ['dj40b','Quadro','Disjuntor bipolar 40A','un',58],
+ ['barramento','Quadro','Barramento de neutro e terra','un',22],
+ ['haste','Aterramento','Kit haste de aterramento 2,4 m','un',89],
+ ['conector','Miúdos','Conector de emenda de alavanca','un',2.9],
+ ['fita','Miúdos','Fita isolante 20 m','un',9.9],
+ ['bucha','Miúdos','Parafuso e bucha (pacote com 50)','pct',12],
+];
+const DEF_PRECO=Object.fromEntries(CAT.map(c=>[c[0],c[4]]));
+const ORC_PADRAO={modo:'ponto',valorPonto:65,valorEspecial:140,valorQuadro:450,valorDiaria:350,pontosDia:10,diasManual:null,ajudante:true,valorAjudante:150,gastoDia:40,incluirMaterial:false,margem:10,desconto:0,pagamento:'50% na aprovação e 50% na entrega do serviço.',validade:15,observacoes:''};
+const MODELOS={
+ apto1:{nome:'Apartamento 1 quarto',c:[['Sala','sala',3.2,4.0],['Cozinha','cozinha',2.4,3.0],['Quarto','quarto',3.0,3.2],['Banheiro','banheiro',1.6,2.4],['Área de serviço','servico',1.5,1.8]]},
+ casa2:{nome:'Casa 2 quartos',c:[['Sala','sala',3.6,4.2],['Cozinha','cozinha',3.0,3.4],['Quarto 1','quarto',3.0,3.2],['Quarto 2','quarto',2.8,3.0],['Banheiro','banheiro',1.8,2.5],['Área de serviço','servico',2.0,2.2],['Varanda','varanda',2.0,3.6]]},
+ casa3:{nome:'Casa 3 quartos com suíte',c:[['Sala','sala',4.0,5.0],['Cozinha','cozinha',3.2,3.6],['Suíte','quarto',3.4,3.6],['Banheiro da suíte','banheiro',1.6,2.4],['Quarto 2','quarto',3.0,3.2],['Quarto 3','quarto',2.8,3.0],['Banheiro social','banheiro',1.8,2.4],['Área de serviço','servico',2.0,2.4],['Garagem','garagem',3.0,5.5]]},
+};
+
+/* ============ Utilidades ============ */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num=v=>{let s=String(v??'').replace(/[^\d,.\-]/g,'');if(s.includes(','))s=s.replace(/\./g,'').replace(',','.');const n=parseFloat(s);return isFinite(n)?n:0};
+const BRL=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
+const brl=v=>BRL.format(v||0);
+const fmt=(v,d=1)=>(+v||0).toLocaleString('pt-BR',{maximumFractionDigits:d});
+const inp=v=>String(Math.round((+v||0)*100)/100).replace('.',',');
+const uid=()=>Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-4);
+const clone=o=>JSON.parse(JSON.stringify(o));
+const plural=(n,s,p)=>`${fmt(n,0)} ${n===1?s:(p||s+'s')}`;
+const hoje=()=>new Date().toLocaleDateString('pt-BR');
+const fone=v=>{let d=String(v||'').replace(/\D/g,'');if(d.length===10||d.length===11)d='55'+d;return d};
+function lista(a){return a.length<2?a.join(''):a.slice(0,-1).join(', ')+' e '+a[a.length-1]}
+
+function sugerirNorma(c){
+  const A=c.largura*c.comprimento,P=2*(c.largura+c.comprimento);
+  let t;
+  if(MOLHADAS.includes(c.tipo)) t=Math.max(2,Math.ceil(P/3.5));
+  else if(c.tipo==='banheiro') t=1;
+  else if(c.tipo==='varanda'||c.tipo==='corredor') t=1;
+  else if(A<=6) t=1;
+  else t=Math.max(1,Math.ceil(P/5));
+  return {tomadas:t,interruptores:1,luminarias:A>20?2:1,chuveiro:c.tipo==='banheiro'?1:0,ar:c.ar||0};
+}
+function novoComodo(nome,tipo,l,c){const r={id:uid(),nome,tipo,largura:l,comprimento:c};return Object.assign(r,sugerirNorma(r))}
+
+/* ============ Cálculo ============ */
+function layout(cs){
+  // cômodos com posição (desenhados na planta ou lidos pela IA) ficam onde estão; os outros são enfileirados abaixo
+  const L={};
+  const temPos=c=>c.x!=null&&c.y!=null&&isFinite(c.x)&&isFinite(c.y);
+  const pos=cs.filter(temPos),resto=cs.filter(c=>!temPos(c));
+  let fundo=0;
+  pos.forEach(c=>{L[c.id]={x:+c.x,z:+c.y,w:+c.largura||1,d:+c.comprimento||1};fundo=Math.max(fundo,+c.y+(+c.comprimento||1))});
+  if(!resto.length)return L;
+  const total=resto.reduce((s,c)=>s+(c.largura||1)*(c.comprimento||1),0);
+  const maxW=Math.max(Math.sqrt(total)*1.35,...resto.map(c=>+c.largura||1));
+  let x=0,z=pos.length?fundo+1:0,h=0;
+  resto.forEach(c=>{const w=+c.largura||1,d=+c.comprimento||1;if(x>0&&x+w>maxW+0.01){x=0;z+=h;h=0}L[c.id]={x,z,w,d};x+=w;h=Math.max(h,d)});
+  return L;
+}
+function calcular(p){
+  const cs=p.comodos||[];const L=layout(cs);
+  const qc=cs.find(c=>c.id===p.quadroEm)||cs[0];
+  const Q=qc?{x:L[qc.id].x+0.12,z:L[qc.id].z+L[qc.id].d/2,cid:qc.id}:{x:0,z:0,cid:null};
+  const r={tomadas:0,tomSecas:0,tom20:0,int:0,lum:0,chuv:0,ar:0,area:0};
+  const m={cabo15:0,cabo25:0,cabo4:0,cabo6:0,eletroduto:0};let circMolh=0;
+  cs.forEach(c=>{
+    const g=L[c.id];const d=Math.abs(g.x+g.w/2-Q.x)+Math.abs(g.z+g.d/2-Q.z)+1.2;
+    const t=+c.tomadas||0,i=+c.interruptores||0,l=+c.luminarias||0,ch=+c.chuveiro||0,a=+c.ar||0;
+    r.area+=(+c.largura||0)*(+c.comprimento||0);
+    if(MOLHADAS.includes(c.tipo)){r.tom20+=t;if(t)circMolh++}else r.tomSecas+=t;
+    r.tomadas+=t;r.int+=i;r.lum+=l;r.chuv+=ch;r.ar+=a;
+    if(t){m.cabo25+=(d*0.8+t*2.5)*3;m.eletroduto+=d*0.8+t*2}
+    if(l||i){m.cabo15+=(d*0.8+l*1.5+i*2)*3;m.eletroduto+=d*0.8+l*1.2+i*2}
+    if(ch){m.cabo6+=(d+3)*3*ch;m.eletroduto+=(d+3)*ch}
+    if(a){m.cabo4+=(d+3)*3*a;m.eletroduto+=(d+3)*a}
+  });
+  const sobra=1.1,up=v=>Math.ceil(v*sobra);
+  const c10=r.lum?Math.max(1,Math.ceil(r.lum/10)):0;
+  const c20=(r.tomSecas?Math.ceil(r.tomSecas/8):0)+circMolh;
+  const circuitos=c10+c20+r.chuv+r.ar;
+  const vagas=c10+c20+2*(r.chuv+r.ar)+6;
+  const qd=vagas<=12?'qd12':vagas<=18?'qd18':vagas<=24?'qd24':'qd36';
+  const pontos=r.tomadas+r.int+r.lum;const tem=circuitos>0?1:0;
+  const q={cabo15:up(m.cabo15),cabo25:up(m.cabo25),cabo4:up(m.cabo4),cabo6:up(m.cabo6),cabo10:tem*15,eletroduto:up(m.eletroduto),
+    cx42:r.tomadas+r.int,cx44:r.chuv+r.ar,cxoct:r.lum,tom10:r.tomSecas,tom20:r.tom20,int1:r.int,plafon:r.lum,saidafio:r.chuv+r.ar,
+    [qd]:tem,djgeral:tem,dr:tem,dps:tem*2,dj10:c10,dj20:c20,dj20b:r.ar,dj40b:r.chuv,barramento:tem*2,haste:tem,
+    conector:pontos*2+(r.chuv+r.ar)*2,fita:pontos?Math.max(1,Math.ceil(pontos/25)):0,bucha:pontos?Math.max(1,Math.ceil((pontos+10)/40)):0};
+  return {q,r,circuitos,circ:{c10,c20,chuv:r.chuv,ar:r.ar},vagas,qd,pontos,L,Q};
+}
+const preco=id=>{const v=S.perfil.precos?.[id];return v!=null?v:(DEF_PRECO[id]??0)};
+function itensMateriais(p,calc){
+  const out=[],ov=p.mat||{};
+  CAT.forEach(([id,cat,nome,un])=>{
+    const auto=calc.q[id]||0,o=ov[id]||{};
+    const qtd=o.qtd!=null?o.qtd:auto;
+    if(!auto&&!(o.qtd>0))return;
+    out.push({id,cat,nome,un,auto,qtd,ajustado:o.qtd!=null&&o.qtd!==auto,sel:o.sel!==false,preco:preco(id)});
+  });
+  (p.extras||[]).forEach((e,i)=>out.push({id:'x'+i,extra:i,cat:'Outros itens',nome:e.nome,un:e.un||'un',qtd:+e.qtd||0,auto:+e.qtd||0,sel:e.sel!==false,preco:+e.preco||0}));
+  return out;
+}
+function orcar(p,calc,custoMat){
+  const o=Object.assign({},ORC_PADRAO,p.orc||{});
+  const simples=calc.pontos,esp=calc.r.chuv+calc.r.ar,quadro=calc.circuitos>0;
+  const diasCalc=(simples+esp)?Math.max(1,Math.ceil((simples+esp*2)/Math.max(1,o.pontosDia)+(quadro?1:0))):0;
+  const dias=o.diasManual>0?o.diasManual:diasCalc;
+  const mo=o.modo==='ponto'?simples*o.valorPonto+esp*o.valorEspecial+(quadro?o.valorQuadro:0):dias*o.valorDiaria;
+  const custos=dias*((o.ajudante?o.valorAjudante:0)+(+o.gastoDia||0));
+  const lucroMat=o.incluirMaterial?custoMat*o.margem/100:0;
+  const matVenda=o.incluirMaterial?custoMat+lucroMat:0;
+  const total=Math.max(0,mo+matVenda-o.desconto);
+  const ganho=mo-custos+lucroMat-o.desconto;
+  return {o,dias,diasCalc,mo,custos,lucroMat,matVenda,total,ganho,porDia:dias?ganho/dias:0,simples,esp,quadro,custoMat};
+}
+function resumo(p){
+  const calc=calcular(p);const itens=itensMateriais(p,calc);
+  const custoMat=itens.filter(i=>i.sel).reduce((s,i)=>s+i.qtd*i.preco,0);
+  return {calc,itens,custoMat,orc:orcar(p,calc,custoMat)};
+}
+
+/* ============ Onde os dados ficam ============ */
+const Store={modo:'memoria',db:null,uid:null,
+  async init(){
+    if(window.claude&&claude.use){
+      try{const [db,user]=await Promise.all([claude.use('db'),claude.use('user')]);
+        if(db&&user){const id=await user.id();const pode=await user.can('data.write').catch(()=>null);
+          if(id&&pode!==false){this.db=db;this.uid=id;this.modo='nuvem';return}}}catch(e){}
+    }
+    try{localStorage.setItem('pap_t','1');localStorage.removeItem('pap_t');this.modo='local'}catch(e){this.modo='memoria'}
+  },
+  pf(){return this.db.doc('data/users/'+this.uid+'/perfil')},
+  ls(k,v){try{if(v===undefined){const s=localStorage.getItem(k);return s?JSON.parse(s):null}if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,JSON.stringify(v))}catch(e){return null}},
+  async carregar(){
+    if(this.modo==='nuvem'){
+      const [pf,qs]=await Promise.all([this.pf().get(),this.pf().collection('projetos').get()]);
+      return {perfil:pf.exists?clone(pf.data()):null,projetos:qs.docs.map(d=>clone(d.data()))};
+    }
+    if(this.modo==='local')return {perfil:this.ls('pap_perfil'),projetos:(this.ls('pap_index')||[]).map(id=>this.ls('pap_p_'+id)).filter(Boolean)};
+    return {perfil:null,projetos:[]};
+  },
+  async salvarPerfil(o){if(this.modo==='nuvem')return this.pf().set(clone(o));if(this.modo==='local')this.ls('pap_perfil',o)},
+  async salvarProjeto(p){
+    if(this.modo==='nuvem'){const e=await this.pf().get();if(!e.exists)await this.pf().set(clone(S.perfil));return this.pf().collection('projetos').doc(p.id).set(clone(p))}
+    if(this.modo==='local'){this.ls('pap_p_'+p.id,p);const ix=this.ls('pap_index')||[];if(!ix.includes(p.id)){ix.push(p.id);this.ls('pap_index',ix)}}
+  },
+  async apagarProjeto(id){
+    if(this.modo==='nuvem'){await this.pf().collection('projetos').doc(id).delete();await this.pf().collection('plantas').doc(id).delete();return}
+    if(this.modo==='local'){this.ls('pap_p_'+id,null);this.ls('pap_pl_'+id,null);this.ls('pap_index',(this.ls('pap_index')||[]).filter(x=>x!==id))}
+  },
+  async lerPlanta(id){
+    if(this.modo==='nuvem'){const d=await this.pf().collection('plantas').doc(id).get();return d.exists?d.data().img:null}
+    if(this.modo==='local')return this.ls('pap_pl_'+id);return null;
+  },
+  async salvarPlanta(id,img){
+    if(this.modo==='nuvem'){const r=this.pf().collection('plantas').doc(id);return img?r.set({img}):r.delete()}
+    if(this.modo==='local')this.ls('pap_pl_'+id,img);
+  }
+};
+const filas={};
+function paraLocal(){try{localStorage.setItem('pap_t','1');localStorage.removeItem('pap_t');Store.modo='local'}catch(e){Store.modo='memoria'}
+  Store.salvarPerfil(S.perfil);S.projetos.forEach(p=>Store.salvarProjeto(p));Object.entries(S.plantas).forEach(([id,img])=>Store.salvarPlanta(id,img));
+  toast('Seus projetos vão ficar salvos neste navegador.');if(S.view==='home')render()}
+function enfileirar(k,fn){filas[k]=(filas[k]||Promise.resolve()).then(fn).catch(e=>{console.warn(e);if(Store.modo==='nuvem'&&e&&(e.code==='invalid_argument'||e.code==='not_granted'||e.code==='revoked')){paraLocal();return}toast(e&&e.code==='quota_exceeded'?'Espaço cheio. Apague projetos antigos para salvar novos.':'Não consegui salvar agora. Confira sua internet e tente de novo.')});return filas[k]}
+const timers={};
+function salvar(p){if(!p||p.exemplo)return;p.atualizado=Date.now();clearTimeout(timers[p.id]);timers[p.id]=setTimeout(()=>enfileirar(p.id,()=>Store.salvarProjeto(p)),600)}
+function salvarPerfil(){clearTimeout(timers._pf);timers._pf=setTimeout(()=>enfileirar('_pf',()=>Store.salvarPerfil(S.perfil)),600)}
+
+/* ============ Estado ============ */
+const S={perfil:{nome:'',empresa:'',telefone:'',cidade:'',precos:{},orcPadrao:null},projetos:[],view:'home',atual:null,aba:'planta',carregado:false,
+  plantas:{},dims:{},desenho:null,pend:null,ai:{fn:null,img:false,rodando:false,ctl:null,status:''},dl:null,novo:false,apagar:false,envio:{fone:'',precos:true},foneCliente:''};
+
+function demo(){
+  const cs=MODELOS.casa2.c.map(a=>novoComodo(...a));
+  cs[2].ar=1;cs[0].tomadas=5;cs[1].tomadas=5;
+  return {id:'exemplo',exemplo:true,nome:'Casa Rua das Acácias',cliente:'Marcos Andrade',telefone:'',endereco:'Rua das Acácias, 120 · Jardim Primavera',status:'orcamento',criado:Date.now(),numero:'ORC-EXEMPLO',
+    comodos:cs,quadroEm:cs[1].id,mat:{},extras:[],orc:Object.assign({},ORC_PADRAO),obs:''};
+}
+let DEMO=demo();
+// planta desenhada na hora para o projeto de exemplo, com uma cota para treinar a escala
+function plantaExemplo(){
+  const L=layout(DEMO.comodos),k=70,pad=70;let W=0,H=0;Object.values(L).forEach(r=>{W=Math.max(W,r.x+r.w);H=Math.max(H,r.z+r.d)});
+  const c=document.createElement('canvas');c.width=Math.round(W*k+pad*2);c.height=Math.round(H*k+pad*2);const x=c.getContext('2d');
+  x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.strokeStyle='#222';x.lineWidth=7;x.textAlign='center';x.fillStyle='#333';
+  DEMO.comodos.forEach(cm=>{const r=L[cm.id],cx=pad+(r.x+r.w/2)*k,cy=pad+(r.z+r.d/2)*k;x.strokeRect(pad+r.x*k,pad+r.z*k,r.w*k,r.d*k);
+    x.font='600 19px Arial';x.fillText(cm.nome.toUpperCase(),cx,cy);x.font='15px Arial';x.fillText(fmt(r.w*r.d)+' m²',cx,cy+22)});
+  const s=L[DEMO.comodos[0].id],y=pad-30,x1=pad+s.x*k,x2=pad+(s.x+s.w)*k;
+  x.lineWidth=1.5;x.strokeStyle='#555';x.beginPath();x.moveTo(x1,y);x.lineTo(x2,y);[x1,x2].forEach(v=>{x.moveTo(v,y-9);x.lineTo(v,y+9)});x.stroke();
+  x.font='600 17px Arial';x.fillText(fmt(s.w,2)+' m',(x1+x2)/2,y-8);
+  return c.toDataURL('image/png');
+}
+try{S.plantas.exemplo=plantaExemplo()}catch(e){}
+
+function novoProjeto(d){
+  const dt=new Date();const n='ORC-'+dt.getFullYear()+String(dt.getMonth()+1).padStart(2,'0')+String(dt.getDate()).padStart(2,'0')+'-'+String(S.projetos.length+1).padStart(2,'0');
+  return {id:'p'+uid(),nome:d.nome||'Projeto sem nome',cliente:d.cliente||'',telefone:d.telefone||'',endereco:d.endereco||'',status:'orcamento',criado:Date.now(),atualizado:Date.now(),numero:n,
+    comodos:[],quadroEm:null,mat:{},extras:[],orc:Object.assign({},ORC_PADRAO,S.perfil.orcPadrao||{}),obs:''};
+}
+const proj=()=>S.atual==='exemplo'?DEMO:S.projetos.find(p=>p.id===S.atual);
+
+/* ============ Toast ============ */
+let tt;
+function toast(msg,acao){const t=$('#toast');t.innerHTML=`<span>${esc(msg)}</span>`+(acao?`<button id="toastbtn">${esc(acao.rotulo)}</button>`:'');t.hidden=false;
+  if(acao)$('#toastbtn').onclick=()=>{acao.fn();t.hidden=true};clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,acao?7000:3200)}
+
+/* ============ Render ============ */
+function render(){
+  const a=document.activeElement,fid=a&&a.id;
+  if(S.view!=='projeto'||S.aba!=='3d')soltar3D();
+  const app=$('#app');
+  if(!S.carregado)app.innerHTML='<div class="load"><div class="spin"></div>Carregando seus projetos…</div>';
+  else if(S.view==='home')app.innerHTML=vHome();
+  else if(S.view==='config')app.innerHTML=vConfig();
+  else if(S.view==='projeto'){if(!proj()){S.view='home';return render()}app.innerHTML=vProjeto();if(S.aba==='3d')montar3D()}
+  if(fid){const el=document.getElementById(fid);if(el&&el!==document.activeElement){el.focus();if(el.select&&el.type==='text')try{el.select()}catch(e){}}}
+}
+function vHome(){
+  const ps=[...S.projetos].sort((a,b)=>(b.atualizado||0)-(a.atualizado||0));
+  let abertos=0,fechados=0,ganho=0;
+  const cards=ps.map(p=>{const R=resumo(p);
+    if(p.status==='orcamento')abertos+=R.orc.total;
+    if(p.status==='aprovado'||p.status==='andamento'){fechados+=R.orc.total;ganho+=R.orc.ganho}
+    return cardProjeto(p,R)}).join('');
+  const nota=Store.modo==='nuvem'?'<span class="dot"></span>Projetos salvos na sua conta Claude.':Store.modo==='local'?'<span class="dot off"></span>Projetos salvos só neste navegador.':'<span class="dot off"></span>Os projetos não estão sendo salvos nesta tela.';
+  return `
+  <section class="hello"><div><h1>Seus projetos</h1><p>Suba a planta da obra, confira os pontos em 3D, gere a lista de material e mande o orçamento pelo WhatsApp.</p></div>
+    <button class="btn primary" data-act="novo" id="btnnovo">+ Novo projeto</button></section>
+  ${S.novo?`<form class="panel" id="fnovo"><h2>Novo projeto</h2>
+    <div class="newform">
+      <label class="f"><span>Nome da obra</span><input type="text" id="n_nome" placeholder="Ex.: Reforma apto 302" required></label>
+      <label class="f"><span>Cliente</span><input type="text" id="n_cliente" placeholder="Nome do cliente"></label>
+      <label class="f"><span>WhatsApp do cliente</span><input type="tel" id="n_tel" placeholder="(11) 98888-7777"></label>
+      <label class="f"><span>Endereço</span><input type="text" id="n_end" placeholder="Rua, número, bairro"></label>
+    </div>
+    <div class="row"><button class="btn primary" type="submit">Criar e subir a planta</button><button class="btn ghost" type="button" data-act="cancelanovo">Cancelar</button></div></form>`:''}
+  ${ps.length?`<div class="kpis">
+    <div class="kpi"><small>Orçamentos em aberto</small><b>${brl(abertos)}</b></div>
+    <div class="kpi"><small>Serviços fechados</small><b>${brl(fechados)}</b></div>
+    <div class="kpi hl"><small>Seu ganho previsto</small><b>${brl(ganho)}</b></div></div>`:''}
+  <div class="plist">${cards}${!ps.length?cardProjeto(DEMO,resumo(DEMO)):''}</div>
+  ${ps.length?`<p class="small muted">Quer ver como funciona? <button class="btn ghost small" data-open="exemplo">Abrir o projeto de exemplo</button></p>`:''}
+  <p class="storenote">${nota}</p>`;
+}
+function cardProjeto(p,R){
+  return `<button class="pcard" data-open="${esc(p.id)}">
+    <div class="row" style="justify-content:space-between;width:100%"><span class="chip st-${p.status}">${STATUS[p.status]}</span>${p.exemplo?'<span class="chip tag-ex">Exemplo</span>':''}</div>
+    <h2>${esc(p.nome)}</h2>
+    <p class="muted small">${esc(p.cliente||'Sem cliente')}${p.endereco?' · '+esc(p.endereco):''}</p>
+    <div class="meta" style="width:100%"><span>${plural(p.comodos.length,'cômodo')} · <b>${R.calc.pontos+R.orc.esp}</b> pontos · <b>${R.orc.dias}</b> ${R.orc.dias===1?'dia':'dias'}</span><b>${brl(R.orc.total)}</b></div>
+  </button>`;
+}
+function vProjeto(){
+  const p=proj();
+  const tabs=[['planta','Planta'],['3d','3D'],['materiais','Materiais'],['orcamento','Orçamento']];
+  return `
+  ${p.exemplo?`<div class="exbar"><span>Este é um projeto de exemplo. Pode mexer à vontade: nada aqui fica salvo.</span><button class="btn primary small" data-act="novoDoExemplo">Criar meu primeiro projeto</button></div>`:''}
+  <div class="phead"><div class="t"><button class="btn ghost small" data-go="home" style="align-self:flex-start;padding-left:0">← Projetos</button>
+    <h1>${esc(p.nome)}</h1><p class="muted small">${esc(p.numero)} · ${esc(p.cliente||'Sem cliente')}</p></div>
+    <label class="f" style="width:170px"><span>Situação</span><select id="p_status" data-f="p:status">${Object.entries(STATUS).map(([k,v])=>`<option value="${k}" ${p.status===k?'selected':''}>${v}</option>`).join('')}</select></label>
+  </div>
+  <div class="tabs" role="tablist">${tabs.map(([k,v])=>`<button class="tab" role="tab" aria-selected="${S.aba===k}" data-aba="${k}">${v}</button>`).join('')}</div>
+  <div id="corpo">${S.aba==='planta'?vPlanta(p):S.aba==='3d'?v3D(p):S.aba==='materiais'?vMateriais(p):vOrcamento(p)}</div>`;
+}
+
+/* ---- Planta ---- */
+function vPlanta(p){
+  const img=S.plantas[p.id];const R=resumo(p);
+  const ai=S.ai;
+  const aiBox=ai.fn?(ai.img?`<div class="aibox">
+      <div class="row" style="justify-content:space-between"><strong>Ler a planta com IA</strong>
+      ${ai.rodando?`<button class="btn small" data-act="pararIA">Parar</button>`:`<button class="btn primary small" data-act="lerIA" ${img?'':'disabled'}>${p.comodos.length?'Ler de novo':'Ler planta'}</button>`}</div>
+      <p class="aistatus" aria-live="polite">${esc(ai.status||(img?'A IA identifica os cômodos, as medidas e os pontos elétricos. Depois você confere e ajusta.':'Suba a planta primeiro.'))}</p></div>`
+     :'')
+    :'';
+  return `<div class="planta-grid ${S.desenho&&img?'desenhando':''}">
+   <div class="panel">
+     <div class="row" style="justify-content:space-between"><h2>Planta</h2>${img&&!S.desenho?`<div class="row"><button class="btn small" data-act="trocarPlanta">Trocar</button><button class="btn ghost small danger" data-act="removerPlanta">Remover</button></div>`:''}</div>
+     ${img?vDesenho(p,img)
+      :`<div class="drop" data-act="trocarPlanta" id="drop" tabindex="0" role="button" aria-label="Enviar planta">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 3h18v18H3z"/><path d="M3 12h7v9M10 3v5h11M14 12h7"/></svg>
+        <strong>Toque para enviar a planta</strong><span class="small muted">Foto, print ou PDF. Pode arrastar o arquivo aqui.</span></div>`}
+     ${S.desenho?'':aiBox}
+     <details class="small" ${S.desenho?'hidden':''}><summary style="cursor:pointer;font-weight:600">Dados do cliente e da obra</summary>
+      <div class="grid2" style="margin-top:10px">
+       <label class="f"><span>Nome da obra</span><input type="text" id="p_nome" data-f="p:nome" value="${esc(p.nome)}"></label>
+       <label class="f"><span>Cliente</span><input type="text" id="p_cliente" data-f="p:cliente" value="${esc(p.cliente)}"></label>
+       <label class="f"><span>WhatsApp do cliente</span><input type="tel" id="p_tel" data-f="p:telefone" value="${esc(p.telefone)}"></label>
+       <label class="f"><span>Endereço</span><input type="text" id="p_end" data-f="p:endereco" value="${esc(p.endereco)}"></label>
+      </div>
+      ${p.exemplo?'':`<div class="row" style="margin-top:12px">${S.apagar?`<span class="small">Apagar este projeto de vez?</span><button class="btn small danger" data-act="apagarSim">Sim, apagar</button><button class="btn ghost small" data-act="apagarNao">Não</button>`:`<button class="btn ghost small danger" data-act="apagar">Apagar projeto</button>`}</div>`}
+     </details>
+   </div>
+   <div class="panel">
+     <div class="row" style="justify-content:space-between"><h2>Cômodos e pontos</h2>
+       <div class="row"><select id="modelo" aria-label="Usar um modelo pronto" style="width:auto"><option value="">Usar modelo pronto…</option>${Object.entries(MODELOS).map(([k,m])=>`<option value="${k}">${m.nome}</option>`).join('')}</select></div></div>
+     <div class="resumo" id="resumo">${vResumo(R)}</div>
+     <div class="row"><button class="btn small" data-act="addComodo">+ Cômodo</button>${p.comodos.length?`<button class="btn small" data-act="norma" title="Quantidade mínima de tomadas e pontos de luz pela NBR 5410">Preencher pontos pela NBR 5410</button>`:''}</div>
+     <div class="rooms" id="rooms">${p.comodos.map(c=>vComodo(c,p)).join('')||`<p class="vazio">Nenhum cômodo ainda. Leia a planta com a IA, escolha um modelo pronto ou adicione cômodo por cômodo.</p>`}</div>
+   </div></div>`;
+}
+function vResumo(R){const r=R.calc.r;return `<span><b>${fmt(r.area)}</b> m²</span><span><b>${r.tomadas}</b> tomadas</span><span><b>${r.int}</b> interruptores</span><span><b>${r.lum}</b> pontos de luz</span><span><b>${r.chuv+r.ar}</b> chuveiro/ar</span><span><b>${R.calc.circuitos}</b> circuitos</span>`}
+function vComodo(c,p){
+  const st=(k,rot,cor)=>`<div class="step"><span><i style="background:${cor}"></i>${rot}</span><button data-act="menos" data-c="${c.id}" data-k="${k}" aria-label="Menos ${rot}">−</button><output>${c[k]||0}</output><button data-act="mais" data-c="${c.id}" data-k="${k}" aria-label="Mais ${rot}">+</button></div>`;
+  const qd=(p.quadroEm||p.comodos[0]?.id)===c.id;
+  return `<div class="room">
+    <div class="room-top"><input type="text" id="c_${c.id}_nome" data-f="c:${c.id}:nome" value="${esc(c.nome)}" aria-label="Nome do cômodo">
+      <select id="c_${c.id}_tipo" data-f="c:${c.id}:tipo" aria-label="Tipo do cômodo">${Object.entries(TIPOS).map(([k,v])=>`<option value="${k}" ${c.tipo===k?'selected':''}>${v}</option>`).join('')}</select>
+      <button class="btn ghost small" data-act="delComodo" data-c="${c.id}" aria-label="Remover ${esc(c.nome)}">✕</button></div>
+    <div class="dims"><input type="text" inputmode="decimal" id="c_${c.id}_l" data-f="c:${c.id}:largura" value="${inp(c.largura)}" aria-label="Largura em metros"> m ×
+      <input type="text" inputmode="decimal" id="c_${c.id}_c" data-f="c:${c.id}:comprimento" value="${inp(c.comprimento)}" aria-label="Comprimento em metros"> m
+      <span class="area">${fmt(c.largura*c.comprimento)} m²</span></div>
+    <div class="steps">${st('tomadas','Tomadas','var(--w-tug)')}${st('interruptores','Interruptores','var(--w-int)')}${st('luminarias','Pontos de luz','var(--w-ilum)')}${st('chuveiro','Chuveiro','var(--w-chuv)')}${st('ar','Ar-condicionado','var(--w-ar)')}</div>
+    <label class="qdradio"><input type="radio" name="quadro" data-f="quadro" value="${c.id}" ${qd?'checked':''}> O quadro de luz fica aqui</label>
+  </div>`;
+}
+
+/* ---- Desenho na planta ---- */
+const mpp=p=>{const e=p.escala;if(!e)return 0;const d=Math.hypot(e.x2-e.x1,e.y2-e.y1);return d?e.m/d:0};
+const r05=v=>Math.max(0.3,Math.round(v*20)/20);
+const medindo={};
+function medirPlanta(id){if(medindo[id]||!S.plantas[id])return;medindo[id]=1;const im=new Image();
+  im.onload=()=>{S.dims[id]={w:im.naturalWidth,h:im.naturalHeight};delete medindo[id];if(S.atual===id&&S.view==='projeto'&&S.aba==='planta')render()};
+  im.onerror=()=>{delete medindo[id]};im.src=S.plantas[id]}
+function adivinharTipo(n){n=n.toLowerCase();const t=[['banh','banheiro'],['lavabo','banheiro'],['coz','cozinha'],['serv','servico'],['lavand','servico'],['sala','sala'],['estar','sala'],['jantar','sala'],['quarto','quarto'],['suíte','quarto'],['suite','quarto'],['dorm','quarto'],['varanda','varanda'],['sacada','varanda'],['garag','garagem'],['corred','corredor'],['hall','corredor'],['escrit','escritorio']];
+  const a=t.find(([k])=>n.includes(k));return a?a[1]:'outro'}
+function vDesenho(p,img){
+  const d=S.dims[p.id];
+  if(!d){medirPlanta(p.id);return `<img class="plantaimg" src="${img}" alt="Planta do projeto ${esc(p.nome)}">`}
+  const k=mpp(p),M=Math.max(d.w,d.h),fs=M/30,sw=M/400,e=p.escala,pd=S.pend;
+  const salas=p.comodos.filter(c=>c.px).map(c=>{const r=c.px,cx=r.x+r.w/2,cy=r.y+r.h/2;
+    return `<g class="sala"><rect x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" stroke-width="${sw*2}"/>
+      <text x="${cx}" y="${cy}" font-size="${fs}" text-anchor="middle" stroke-width="${fs/8}">${esc(c.nome)}</text>
+      <text x="${cx}" y="${cy+fs*1.05}" font-size="${fs*0.72}" text-anchor="middle" stroke-width="${fs/9}">${fmt(c.largura,2)} × ${fmt(c.comprimento,2)} m</text></g>`}).join('');
+  const linha=e?`<g class="escala"><line x1="${e.x1}" y1="${e.y1}" x2="${e.x2}" y2="${e.y2}" stroke-width="${sw*3}"/><circle cx="${e.x1}" cy="${e.y1}" r="${sw*5}"/><circle cx="${e.x2}" cy="${e.y2}" r="${sw*5}"/>
+    <text x="${(e.x1+e.x2)/2}" y="${(e.y1+e.y2)/2-fs*0.45}" font-size="${fs*0.85}" text-anchor="middle" stroke-width="${fs/5}">${fmt(e.m,2)} m</text></g>`:'';
+  const pend=pd?(pd.t==='escala'?`<line class="tmp pendshape" x1="${pd.a.x}" y1="${pd.a.y}" x2="${pd.b.x}" y2="${pd.b.y}" stroke-width="${sw*3}"/>`
+    :`<rect class="tmp pendshape" x="${pd.x}" y="${pd.y}" width="${pd.w}" height="${pd.h}" stroke-width="${sw*2}"/>`):'';
+  const svg=`<svg id="plsvg" class="plsvg${S.desenho?' ativo':''}" viewBox="0 0 ${d.w} ${d.h}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Planta do projeto ${esc(p.nome)}">
+    <image href="${img}" width="${d.w}" height="${d.h}"/>${salas}${linha}${pend}
+    <line id="tmpl" class="tmp" stroke-width="${sw*3}" x1="0" y1="0" x2="0" y2="0" visibility="hidden"/>
+    <rect id="tmpr" class="tmp" stroke-width="${sw*2}" x="0" y="0" width="0" height="0" visibility="hidden"/></svg>`;
+  if(!S.desenho)return svg+`<div class="aibox"><div class="row" style="justify-content:space-between"><strong>Desenhar cômodos na planta</strong>
+    <button class="btn primary small" data-act="desenhar">${p.comodos.some(c=>c.px)?'Continuar desenhando':'Começar'}</button></div>
+    <p class="small muted">Marque uma medida que você conhece e depois arraste o dedo sobre cada cômodo. O app calcula as medidas sozinho.</p></div>`;
+  let dica,form='';
+  if(S.desenho==='escala'){
+    dica=e?`Escala atual: a linha azul mede ${fmt(e.m,2)} m. Para trocar, arraste uma nova linha.`:'Arraste uma linha ao longo de uma parede ou cota que você sabe quanto mede. Exemplo: a largura da sala.';
+    if(pd&&pd.t==='escala')form=`<form class="pend" id="fescala"><label class="f"><span>Quanto essa linha mede na obra? (em metros)</span>
+      <input type="text" inputmode="decimal" id="pend_m" placeholder="Ex.: 4,20" autocomplete="off"></label>
+      <div class="row"><button class="btn primary" type="submit">Salvar escala</button><button class="btn ghost" type="button" data-act="cancelarPend">Traçar de novo</button></div></form>`;
+  }else{
+    dica='Arraste de um canto até o canto oposto de cada cômodo. As bordas grudam nas paredes que você já desenhou.';
+    if(pd&&pd.t==='comodo'){const w=r05(pd.w*k),h=r05(pd.h*k);
+      form=`<form class="pend" id="fcomodo"><p><strong class="num">${fmt(w,2)} × ${fmt(h,2)} m</strong> <span class="muted">(${fmt(w*h)} m²)</span>. Que cômodo é esse?</p>
+        <div class="row">${Object.entries(TIPOS).map(([t,v])=>`<button class="btn small" type="button" data-act="addDesenho" data-tipo="${t}">${v}</button>`).join('')}</div>
+        <label class="f"><span>Nome diferente (opcional)</span><input type="text" id="pend_nome" placeholder="Ex.: Quarto do casal" autocomplete="off"></label>
+        <div class="row"><button class="btn ghost small" type="button" data-act="cancelarPend">Desenhar de novo</button></div></form>`}
+  }
+  return `<div class="drawbar"><div class="seg" role="group" aria-label="Etapa do desenho">
+      <button data-act="modoDesenho" data-v="escala" aria-pressed="${S.desenho==='escala'}">1. Escala</button>
+      <button data-act="modoDesenho" data-v="comodo" aria-pressed="${S.desenho==='comodo'}" ${k?'':'disabled'}>2. Cômodos</button></div>
+    <button class="btn primary small" data-act="concluirDesenho">Concluir</button></div>
+    <p class="dica">${dica}</p>${svg}${form}`;
+}
+function criarDoDesenho(tipo){
+  const p=proj(),r=S.pend,k=mpp(p);if(!r||!k)return;
+  const dig=($('#pend_nome')?.value||'').trim();const n=p.comodos.filter(c=>c.tipo===tipo).length;
+  const nome=dig||(TIPOS[tipo]+(n?' '+(n+1):''));
+  const c=novoComodo(nome,tipo,r05(r.w*k),r05(r.h*k));
+  c.px={x:r.x,y:r.y,w:r.w,h:r.h};c.x=Math.round(r.x*k*100)/100;c.y=Math.round(r.y*k*100)/100;
+  p.comodos.push(c);if(!p.quadroEm&&MOLHADAS.includes(tipo))p.quadroEm=c.id;
+  S.pend=null;salvar(p);render();
+  toast(`${nome} adicionado.`,{rotulo:'Desfazer',fn:()=>{p.comodos=p.comodos.filter(x=>x!==c);if(p.quadroEm===c.id)p.quadroEm=null;salvar(p);render()}});
+}
+let DR=null;
+function ptSVG(svg,e){const m=svg.getScreenCTM();if(!m)return null;const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;const r=pt.matrixTransform(m.inverse());
+  const d=S.dims[S.atual];return {x:Math.max(0,Math.min(d.w,r.x)),y:Math.max(0,Math.min(d.h,r.y))}}
+function grudar(pt){const p=proj(),d=S.dims[p.id],t=Math.max(d.w,d.h)*0.012,xs=[],ys=[];
+  p.comodos.forEach(c=>{if(c.px){xs.push(c.px.x,c.px.x+c.px.w);ys.push(c.px.y,c.px.y+c.px.h)}});
+  const perto=(v,arr)=>{let b=v,bd=t;arr.forEach(a=>{const x=Math.abs(a-v);if(x<bd){bd=x;b=a}});return b};
+  return {x:perto(pt.x,xs),y:perto(pt.y,ys)}}
+function mostrarTmp(){const{a,b}=DR;
+  if(S.desenho==='escala'){const l=$('#tmpl');if(!l)return;l.setAttribute('x1',a.x);l.setAttribute('y1',a.y);l.setAttribute('x2',b.x);l.setAttribute('y2',b.y);l.setAttribute('visibility','visible')}
+  else{const r=$('#tmpr');if(!r)return;r.setAttribute('x',Math.min(a.x,b.x));r.setAttribute('y',Math.min(a.y,b.y));r.setAttribute('width',Math.abs(b.x-a.x));r.setAttribute('height',Math.abs(b.y-a.y));r.setAttribute('visibility','visible')}}
+document.addEventListener('pointerdown',e=>{
+  const svg=e.target.closest&&e.target.closest('#plsvg.ativo');if(!svg||e.button>0)return;
+  let a=ptSVG(svg,e);if(!a)return;e.preventDefault();
+  if(S.desenho==='comodo')a=grudar(a);
+  if(S.pend){S.pend=null;document.querySelectorAll('.pendshape,form.pend').forEach(x=>x.remove())}
+  try{svg.setPointerCapture(e.pointerId)}catch(_){}
+  DR={id:e.pointerId,a,b:a,svg};mostrarTmp();
+});
+document.addEventListener('pointermove',e=>{if(!DR||e.pointerId!==DR.id)return;let b=ptSVG(DR.svg,e);if(!b)return;if(S.desenho==='comodo')b=grudar(b);DR.b=b;mostrarTmp()});
+function fimDesenho(e){
+  if(!DR||e.pointerId!==DR.id)return;const{a,b}=DR;DR=null;const d=S.dims[S.atual],min=Math.max(d.w,d.h)*0.015;
+  if(S.desenho==='escala'){if(Math.hypot(b.x-a.x,b.y-a.y)>=min)S.pend={t:'escala',a,b}}
+  else if(Math.abs(b.x-a.x)>=min&&Math.abs(b.y-a.y)>=min)S.pend={t:'comodo',x:Math.min(a.x,b.x),y:Math.min(a.y,b.y),w:Math.abs(b.x-a.x),h:Math.abs(b.y-a.y)};
+  render();
+  setTimeout(()=>{const f=$('form.pend');if(f)f.scrollIntoView({block:'nearest',behavior:'smooth'});$('#pend_m')?.focus()},0);
+}
+document.addEventListener('pointerup',fimDesenho);document.addEventListener('pointercancel',fimDesenho);
+
+/* ---- 3D ---- */
+function v3D(p){
+  if(!p.comodos.length)return `<div class="panel"><p class="vazio">Adicione os cômodos na aba Planta para ver a obra em 3D.</p></div>`;
+  const c=S.cam;
+  return `<div class="panel">
+   <div class="row" style="justify-content:space-between"><h2>Visão 3D da instalação</h2>
+    <div class="row"><button class="btn small" data-act="vista" data-v="3d">3D</button><button class="btn small" data-act="vista" data-v="cima">De cima</button></div></div>
+   <div class="scene" id="scene"><span class="hint">Arraste para girar · role ou use dois dedos para zoom</span></div>
+   <div class="row" style="justify-content:space-between">
+    <div class="legend">
+     <span><i style="background:var(--w-tug)"></i>Tomadas</span><span><i style="background:var(--w-int)"></i>Interruptores</span><span><i style="background:var(--w-ilum)"></i>Pontos de luz</span>
+     <span><i style="background:var(--w-chuv)"></i>Chuveiro</span><span><i style="background:var(--w-ar)"></i>Ar-condicionado</span><span><i style="background:var(--w-qd)"></i>Quadro</span></div>
+    <div class="row">${[['paredes','Paredes'],['cabos','Caminho dos cabos'],['nomes','Nomes']].map(([k,v])=>`<label class="check small"><input type="checkbox" data-camada="${k}" ${V3.camadas[k]?'checked':''}>${v}</label>`).join('')}</div>
+   </div>
+   <p class="small muted">As linhas mostram por onde os cabos passam pelo forro, saindo do quadro. O caminho é uma estimativa para calcular a metragem.</p>
+  </div>`;
+}
+const V3={r:null,scene:null,cam:null,th:0.9,ph:0.95,rad:18,tx:0,tz:0,camadas:{paredes:true,cabos:true,nomes:true},g:{},ro:null,ptrs:new Map(),pinch:0};
+function soltar3D(){if(V3.ro){V3.ro.disconnect();V3.ro=null}}
+function cor(v){return new THREE.Color(getComputedStyle(document.documentElement).getPropertyValue(v).trim()||'#888')}
+function montar3D(){
+  const host=$('#scene');if(!host)return;
+  if(!window.THREE){host.innerHTML='<p class="vazio">Não foi possível carregar a visão 3D. Confira sua internet e abra a aba de novo.</p>';return}
+  try{if(!V3.r){V3.r=new THREE.WebGLRenderer({antialias:true});V3.r.setPixelRatio(Math.min(2,window.devicePixelRatio||1));ligarControles(V3.r.domElement)}}
+  catch(e){host.innerHTML='<p class="vazio">Este aparelho não conseguiu abrir a visão 3D.</p>';return}
+  host.prepend(V3.r.domElement);
+  construirCena(proj());
+  V3.ro=new ResizeObserver(()=>{const w=host.clientWidth,h=host.clientHeight;if(!w||!h)return;V3.r.setSize(w,h,false);V3.cam.aspect=w/h;V3.cam.updateProjectionMatrix();desenhar()});
+  V3.ro.observe(host);
+}
+function etiqueta(txt){
+  const c=document.createElement('canvas'),x=c.getContext('2d');const f=44;x.font=`700 ${f}px "Barlow Condensed", Arial Narrow, sans-serif`;
+  const w=Math.ceil(x.measureText(txt).width)+28;c.width=w;c.height=f+22;
+  x.fillStyle='rgba(255,255,255,0.92)';x.beginPath();if(x.roundRect)x.roundRect(0,0,w,c.height,12);else x.rect(0,0,w,c.height);x.fill();
+  x.font=`700 ${f}px "Barlow Condensed", Arial Narrow, sans-serif`;x.fillStyle='#1B242D';x.textBaseline='middle';x.fillText(txt,14,c.height/2+2);
+  const t=new THREE.CanvasTexture(c);t.minFilter=THREE.LinearFilter;
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,depthTest:false,transparent:true}));s.renderOrder=10;
+  const k=0.0085;s.scale.set(w*k,c.height*k,1);return s;
+}
+function construirCena(p){
+  const calc=calcular(p),L=calc.L,Q=calc.Q,H=2.7,FORRO=2.85;
+  const sc=new THREE.Scene();sc.background=cor('--scene');
+  sc.add(new THREE.HemisphereLight(0xffffff,0x556677,0.95));const dl=new THREE.DirectionalLight(0xffffff,0.55);dl.position.set(8,14,6);sc.add(dl);
+  const g={paredes:new THREE.Group(),cabos:new THREE.Group(),nomes:new THREE.Group(),pontos:new THREE.Group()};Object.values(g).forEach(x=>sc.add(x));
+  const C={tug:cor('--w-tug'),int:cor('--w-int'),ilum:cor('--w-ilum'),chuv:cor('--w-chuv'),ar:cor('--w-ar'),qd:cor('--w-qd')};
+  const pisos={sala:0xE9DCC7,quarto:0xDCE3EC,cozinha:0xE3E6D6,banheiro:0xD5E6EA,servico:0xDDE6DA,varanda:0xE6DCD0,garagem:0xD4D6D9,corredor:0xE2E0DC,escritorio:0xE0DCEA,outro:0xE0E0E0};
+  const matParede=new THREE.MeshStandardMaterial({color:0x9AA7B4,transparent:true,opacity:0.26,depthWrite:false,side:THREE.DoubleSide});
+  const matAresta=new THREE.LineBasicMaterial({color:0x56626E});
+  let minX=1e9,maxX=-1e9,minZ=1e9,maxZ=-1e9;
+  const cabo=(pts,cr)=>{const geo=new THREE.BufferGeometry().setFromPoints(pts.map(a=>new THREE.Vector3(...a)));g.cabos.add(new THREE.Line(geo,new THREE.LineBasicMaterial({color:cr})))};
+  const rota=(px,py,pz,cr)=>cabo([[Q.x,1.5,Q.z],[Q.x,FORRO,Q.z],[px,FORRO,Q.z],[px,FORRO,pz],[px,py,pz]],cr);
+  const mesh=(geo,cr,emis)=>new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color:cr,emissive:emis?cr:0x000000,emissiveIntensity:emis?0.55:0,roughness:0.6}));
+  p.comodos.forEach(c=>{
+    const r=L[c.id];minX=Math.min(minX,r.x);maxX=Math.max(maxX,r.x+r.w);minZ=Math.min(minZ,r.z);maxZ=Math.max(maxZ,r.z+r.d);
+    const piso=new THREE.Mesh(new THREE.BoxGeometry(r.w-0.04,0.06,r.d-0.04),new THREE.MeshStandardMaterial({color:pisos[c.tipo]||0xE0E0E0,roughness:0.9}));
+    piso.position.set(r.x+r.w/2,-0.03,r.z+r.d/2);sc.add(piso);
+    const base=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(r.w,0.001,r.d)),matAresta);base.position.set(r.x+r.w/2,0.01,r.z+r.d/2);sc.add(base);
+    [[r.w,0.1,r.x+r.w/2,r.z],[r.w,0.1,r.x+r.w/2,r.z+r.d],[0.1,r.d,r.x,r.z+r.d/2],[0.1,r.d,r.x+r.w,r.z+r.d/2]].forEach(([w,d,x,z])=>{
+      const bg=new THREE.BoxGeometry(w,H,d);const m=new THREE.Mesh(bg,matParede);m.position.set(x,H/2,z);g.paredes.add(m);
+      const e=new THREE.LineSegments(new THREE.EdgesGeometry(bg),new THREE.LineBasicMaterial({color:0x7B8894,transparent:true,opacity:0.5}));e.position.copy(m.position);g.paredes.add(e)});
+    const lb=etiqueta(c.nome);lb.position.set(r.x+r.w/2,H+0.55,r.z+r.d/2);g.nomes.add(lb);
+    // posição ao longo do perímetro, recuada da parede
+    const P=2*(r.w+r.d),ins=0.09;
+    const perim=t=>{t=((t%P)+P)%P;if(t<r.w)return[r.x+t,r.z+ins];t-=r.w;if(t<r.d)return[r.x+r.w-ins,r.z+t];t-=r.d;if(t<r.w)return[r.x+r.w-t,r.z+r.d-ins];t-=r.w;return[r.x+ins,r.z+r.d-t]};
+    const nt=+c.tomadas||0;for(let i=0;i<nt;i++){const[x,z]=perim(0.9+(i+0.5)*(P-1.2)/nt);const m=mesh(new THREE.BoxGeometry(0.18,0.22,0.18),C.tug);m.position.set(x,0.3,z);g.pontos.add(m);rota(x,0.3,z,C.tug)}
+    const ni=+c.interruptores||0;for(let i=0;i<ni;i++){const[x,z]=perim(0.35+i*0.25);const m=mesh(new THREE.BoxGeometry(0.14,0.2,0.14),C.int);m.position.set(x,1.1,z);g.pontos.add(m);rota(x,1.1,z,C.ilum)}
+    const nl=+c.luminarias||0;for(let i=0;i<nl;i++){const along=r.w>=r.d;const f=(i+1)/(nl+1);const x=along?r.x+r.w*f:r.x+r.w/2,z=along?r.z+r.d/2:r.z+r.d*f;
+      const m=mesh(new THREE.CylinderGeometry(0.22,0.22,0.06,24),C.ilum,true);m.position.set(x,H-0.05,z);g.pontos.add(m);cabo([[x,H-0.05,z],[x,FORRO,z]],C.ilum);rota(x,FORRO,z,C.ilum)}
+    const nc=+c.chuveiro||0;for(let i=0;i<nc;i++){const x=r.x+r.w-0.45-i*0.6,z=r.z+r.d-0.45;const m=mesh(new THREE.CylinderGeometry(0.14,0.1,0.1,20),C.chuv,true);m.position.set(x,2.15,z);g.pontos.add(m);
+      const b=mesh(new THREE.CylinderGeometry(0.02,0.02,0.5,8),C.chuv);b.position.set(x,2.4,z);g.pontos.add(b);rota(x,2.65,z,C.chuv)}
+    const na=+c.ar||0;for(let i=0;i<na;i++){const x=r.x+r.w/2+i*1.1,z=r.z+0.16;const m=mesh(new THREE.BoxGeometry(0.85,0.28,0.2),C.ar);m.position.set(x,2.25,z);g.pontos.add(m);rota(x,2.25,z,C.ar)}
+  });
+  if(Q.cid){const q=mesh(new THREE.BoxGeometry(0.1,0.55,0.4),C.qd);q.position.set(Q.x,1.5,Q.z);g.pontos.add(q);
+    const lq=etiqueta('Quadro');lq.scale.multiplyScalar(0.75);lq.position.set(Q.x+0.3,2.0,Q.z);g.nomes.add(lq)}
+  V3.scene=sc;V3.g=g;V3.tx=(minX+maxX)/2;V3.tz=(minZ+maxZ)/2;V3.rad=Math.max(maxX-minX,maxZ-minZ,4)*1.45;
+  V3.cam=new THREE.PerspectiveCamera(42,1.6,0.1,500);
+  aplicarCamadas();
+  const host=$('#scene');if(host&&host.clientWidth){V3.r.setSize(host.clientWidth,host.clientHeight,false);V3.cam.aspect=host.clientWidth/host.clientHeight;V3.cam.updateProjectionMatrix()}
+  desenhar();
+}
+function aplicarCamadas(){if(!V3.g.paredes)return;V3.g.paredes.visible=V3.camadas.paredes;V3.g.cabos.visible=V3.camadas.cabos;V3.g.nomes.visible=V3.camadas.nomes}
+function desenhar(){if(!V3.r||!V3.cam||!V3.scene)return;const{th,ph,rad,tx,tz}=V3;
+  V3.cam.position.set(tx+rad*Math.sin(ph)*Math.cos(th),rad*Math.cos(ph)+0.5,tz+rad*Math.sin(ph)*Math.sin(th));V3.cam.lookAt(tx,0.8,tz);V3.r.render(V3.scene,V3.cam)}
+function ligarControles(el){
+  el.addEventListener('pointerdown',e=>{el.setPointerCapture(e.pointerId);V3.ptrs.set(e.pointerId,[e.clientX,e.clientY]);if(V3.ptrs.size===2){const[a,b]=[...V3.ptrs.values()];V3.pinch=Math.hypot(a[0]-b[0],a[1]-b[1])}});
+  el.addEventListener('pointermove',e=>{if(!V3.ptrs.has(e.pointerId))return;const prev=V3.ptrs.get(e.pointerId);V3.ptrs.set(e.pointerId,[e.clientX,e.clientY]);
+    if(V3.ptrs.size===1){V3.th+=(e.clientX-prev[0])*0.008;V3.ph=Math.min(1.45,Math.max(0.02,V3.ph-(e.clientY-prev[1])*0.008))}
+    else if(V3.ptrs.size===2){const[a,b]=[...V3.ptrs.values()];const d=Math.hypot(a[0]-b[0],a[1]-b[1]);if(V3.pinch)V3.rad=Math.min(120,Math.max(3,V3.rad*V3.pinch/d));V3.pinch=d}
+    desenhar()});
+  const fim=e=>{V3.ptrs.delete(e.pointerId);V3.pinch=0};el.addEventListener('pointerup',fim);el.addEventListener('pointercancel',fim);
+  el.addEventListener('wheel',e=>{e.preventDefault();V3.rad=Math.min(120,Math.max(3,V3.rad*(1+e.deltaY*0.0012)));desenhar()},{passive:false});
+}
+
+/* ---- Materiais ---- */
+function vMateriais(p){
+  const R=resumo(p);const it=R.itens;
+  if(!p.comodos.length&&!it.length)return `<div class="panel"><p class="vazio">A lista de material aparece aqui assim que você tiver cômodos na aba Planta.</p></div>`;
+  const sel=it.filter(i=>i.sel);let cat='';
+  const linhas=it.map(i=>{let h='';if(i.cat!==cat){cat=i.cat;h+=`<tr class="cat"><td colspan="5">${esc(cat)}</td></tr>`}
+    const k=i.extra!=null?`x:${i.extra}`:`m:${i.id}`;
+    h+=`<tr class="${i.sel?'':'off'}"><td><input type="checkbox" id="sel_${i.id}" data-f="${k}:sel" ${i.sel?'checked':''} aria-label="Incluir ${esc(i.nome)}"></td>
+      <td>${esc(i.nome)}${i.extra!=null?` <button class="btn ghost small danger" data-act="delExtra" data-i="${i.extra}" aria-label="Remover item">✕</button>`:''}</td>
+      <td><div class="q"><input type="text" inputmode="decimal" id="q_${i.id}" data-f="${k}:qtd" value="${inp(i.qtd)}" aria-label="Quantidade"><span class="muted small">${esc(i.un)}</span>${i.ajustado?`<button class="adj" data-act="resetQtd" data-id="${i.id}" title="Voltar para a quantidade calculada (${fmt(i.auto)})">ajustado ↺</button>`:''}</div></td>
+      <td class="p"><input type="text" inputmode="decimal" id="pr_${i.id}" data-f="${i.extra!=null?`x:${i.extra}:preco`:`preco:${i.id}`}" value="${inp(i.preco)}" aria-label="Preço unitário"></td>
+      <td class="sub">${brl(i.qtd*i.preco)}</td></tr>`;return h}).join('');
+  const txt=textoLista(p,R);
+  const fn=fone(S.envio.fone);
+  return `<div class="panel">
+    <div class="mtop"><div><h2>Lista de material</h2><p class="small muted">Calculada pelos cômodos e pontos, com 10% de sobra nos cabos e eletrodutos. Ajuste o que precisar.</p></div>
+      <div style="text-align:right"><div class="mtotal">${brl(R.custoMat)}</div><div class="small muted">${plural(sel.length,'item','itens')} marcados de ${it.length}</div></div></div>
+    <div class="row"><button class="btn small" data-act="marcar" data-v="1">Marcar todos</button><button class="btn small" data-act="marcar" data-v="0">Desmarcar todos</button></div>
+    <div class="tbl-wrap"><table class="mat"><thead><tr><th></th><th>Material</th><th>Qtd.</th><th>Preço un. (R$)</th><th style="text-align:right">Subtotal</th></tr></thead><tbody>${linhas}</tbody></table></div>
+    <p class="small muted">Preços de referência. Quando você muda um preço aqui, ele vale para todos os seus projetos.</p>
+    <form class="row" id="fextra" style="align-items:flex-end">
+      <label class="f" style="flex:3 1 200px"><span>Adicionar item</span><input type="text" id="ex_nome" placeholder="Ex.: Refletor LED 50W"></label>
+      <label class="f" style="flex:1 1 70px"><span>Qtd.</span><input type="text" inputmode="decimal" id="ex_qtd" value="1"></label>
+      <label class="f" style="flex:1 1 70px"><span>Unidade</span><input type="text" id="ex_un" value="un"></label>
+      <label class="f" style="flex:1 1 90px"><span>Preço un.</span><input type="text" inputmode="decimal" id="ex_preco" placeholder="0,00"></label>
+      <button class="btn" type="submit">Adicionar</button></form>
+  </div>
+  <div class="og">
+   <div class="panel"><h2>Mandar a lista</h2>
+    <label class="f"><span>WhatsApp da loja ou fornecedor (opcional)</span><input type="tel" id="env_fone" data-f="envio:fone" value="${esc(S.envio.fone)}" placeholder="(11) 3333-4444"></label>
+    <label class="check"><input type="checkbox" id="env_precos" data-f="envio:precos" ${S.envio.precos?'checked':''}>Incluir meus preços na mensagem</label>
+    <div class="row"><a class="btn zap" href="https://wa.me/${fn}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">Abrir no WhatsApp</a>
+     <button class="btn" data-act="copiar" data-alvo="lista">Copiar texto</button>
+     <button class="btn" data-act="baixarCSV">Baixar planilha</button></div>
+    <p class="small muted">Se o WhatsApp não abrir, use "Copiar texto" e cole na conversa.</p></div>
+   <div class="panel"><h3>Prévia da mensagem</h3><pre class="msg" id="txt_lista">${esc(txt)}</pre></div>
+  </div>`;
+}
+function textoLista(p,R){
+  const sel=R.itens.filter(i=>i.sel);let cat='',s=`*Lista de material · ${p.nome}*\n`;
+  if(p.endereco)s+=`${p.endereco}\n`;
+  sel.forEach(i=>{if(i.cat!==cat){cat=i.cat;s+=`\n*${cat}*\n`}s+=`• ${i.nome}: ${fmt(i.qtd,2)} ${i.un}`+(S.envio.precos?` (${brl(i.qtd*i.preco)})`:'')+'\n'});
+  if(S.envio.precos)s+=`\n*Total estimado: ${brl(R.custoMat)}*`;
+  return s.trim();
+}
+
+/* ---- Orçamento ---- */
+function vOrcamento(p){
+  const R=resumo(p),O=R.orc,o=O.o;
+  const campo=(k,rot,pre='R$')=>`<label class="f"><span>${rot}</span><input type="text" inputmode="decimal" id="o_${k}" data-f="o:${k}" value="${inp(o[k])}" aria-label="${rot}${pre?' em '+pre:''}"></label>`;
+  const txt=textoOrcamento(p,R);const fc=fone(p.telefone);
+  return `<div class="kpis">
+    <div class="kpi"><small>Valor para o cliente</small><b>${brl(O.total)}</b></div>
+    <div class="kpi hl"><small>Seu ganho líquido</small><b>${brl(O.ganho)}</b></div>
+    <div class="kpi"><small>Dias de trabalho</small><b>${O.dias}</b></div>
+    <div class="kpi"><small>Ganho por dia</small><b>${brl(O.porDia)}</b></div></div>
+  <div class="og">
+   <div class="panel">
+    <h2>Mão de obra</h2>
+    <div class="seg" role="group" aria-label="Como cobrar"><button data-act="modo" data-v="ponto" aria-pressed="${o.modo==='ponto'}">Por ponto</button><button data-act="modo" data-v="diaria" aria-pressed="${o.modo==='diaria'}">Por diária</button></div>
+    <div class="grid2">${o.modo==='ponto'?campo('valorPonto','Tomada, interruptor ou luz (por ponto)')+campo('valorEspecial','Chuveiro ou ar (por ponto)')+campo('valorQuadro','Montagem do quadro'):campo('valorDiaria','Valor da sua diária')}</div>
+    <h3>Prazo</h3>
+    <div class="grid2">${campo('pontosDia','Pontos que você faz por dia','')}
+     <label class="f"><span>Dias de trabalho (calculado: ${O.diasCalc})</span><input type="text" inputmode="numeric" id="o_diasManual" data-f="o:diasManual" value="${o.diasManual>0?o.diasManual:''}" placeholder="${O.diasCalc}"></label></div>
+    <p class="small muted">Chuveiro e ar contam como 2 pontos. Montar o quadro soma 1 dia. Para usar outro prazo, escreva no campo de dias.</p>
+    <h3>Seus custos na obra</h3>
+    <label class="check"><input type="checkbox" id="o_ajudante" data-f="o:ajudante" ${o.ajudante?'checked':''}>Vou levar ajudante</label>
+    <div class="grid2">${o.ajudante?campo('valorAjudante','Diária do ajudante'):''}${campo('gastoDia','Transporte e comida por dia')}</div>
+    <h3>Material</h3>
+    <label class="check"><input type="checkbox" id="o_incluir" data-f="o:incluirMaterial" ${o.incluirMaterial?'checked':''}>Eu compro o material e cobro do cliente</label>
+    ${o.incluirMaterial?`<div class="grid2">${campo('margem','Acréscimo sobre o material (%)','%')}</div>`:`<p class="small muted">O cliente compra o material. A lista vai junto com o orçamento.</p>`}
+    <h3>Condições</h3>
+    <div class="grid2">${campo('desconto','Desconto')}${campo('validade','Validade (dias)','')}</div>
+    <label class="f"><span>Forma de pagamento</span><input type="text" id="o_pag" data-f="o:pagamento" value="${esc(o.pagamento)}"></label>
+    <label class="f"><span>Observações para o cliente</span><textarea id="o_obs" data-f="o:observacoes" placeholder="Ex.: Não inclui abertura de parede em concreto.">${esc(o.observacoes)}</textarea></label>
+   </div>
+   <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+    <div class="panel"><h2>Conta da obra</h2><div class="conta">
+      <div><span>Mão de obra${o.modo==='ponto'?` (${O.simples} pontos + ${O.esp} especiais${O.quadro?' + quadro':''})`:` (${O.dias} diárias)`}</span><b>${brl(O.mo)}</b></div>
+      ${o.incluirMaterial?`<div><span>Material (custo ${brl(R.custoMat)} + ${fmt(o.margem)}%)</span><b>${brl(O.matVenda)}</b></div>`:`<div><span>Material (cliente compra)</span><b>${brl(R.custoMat)}</b></div>`}
+      ${o.desconto?`<div class="neg"><span>Desconto</span><b>− ${brl(o.desconto)}</b></div>`:''}
+      <div class="tot"><span>Cliente paga</span><b>${brl(O.total)}</b></div>
+      <div class="neg"><span>Seus custos (${O.dias} dias${o.ajudante?' com ajudante':''})</span><b>− ${brl(O.custos)}</b></div>
+      ${o.incluirMaterial?`<div><span>Seu lucro no material</span><b>${brl(O.lucroMat)}</b></div>`:''}
+      <div class="tot"><span>Fica com você</span><b>${brl(O.ganho)}</b></div></div></div>
+    ${vPapel(p,R)}
+    <div class="panel"><h2>Enviar orçamento</h2>
+     <div class="row"><a class="btn zap" href="https://wa.me/${fc}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">${fc?'Mandar para '+esc(p.cliente.split(' ')[0]||'o cliente'):'Abrir no WhatsApp'}</a>
+      <button class="btn" data-act="copiar" data-alvo="orc">Copiar texto</button>
+      <button class="btn" data-act="baixarOrc">Baixar orçamento</button></div>
+     ${fc?'':'<p class="small muted">Coloque o WhatsApp do cliente em Planta → Dados do cliente para a conversa já abrir com ele.</p>'}
+     <p class="small muted">O arquivo baixado abre no navegador. De lá dá para imprimir ou salvar em PDF.</p>
+     <pre class="msg" id="txt_orc" hidden>${esc(txt)}</pre></div>
+   </div></div>`;
+}
+function descServico(p,R){
+  const r=R.calc.r,a=[];
+  if(r.tomadas)a.push(plural(r.tomadas,'tomada'));if(r.int)a.push(plural(r.int,'interruptor','interruptores'));if(r.lum)a.push(plural(r.lum,'ponto de luz','pontos de luz'));
+  if(r.chuv)a.push(plural(r.chuv,'ponto de chuveiro','pontos de chuveiro'));if(r.ar)a.push(plural(r.ar,'ponto de ar-condicionado','pontos de ar-condicionado'));
+  let s=`Instalação elétrica em ${plural(p.comodos.length,'cômodo')} (${fmt(r.area)} m²)`+(a.length?': '+lista(a):'');
+  if(R.calc.circuitos)s+=`. Montagem do quadro com ${plural(R.calc.circuitos,'circuito')}, disjuntor geral, DR e DPS, e aterramento`;
+  return s+'.';
+}
+function vPapel(p,R){
+  const O=R.orc,o=O.o,pf=S.perfil;
+  return `<div class="paper" aria-label="Prévia do orçamento">
+   <div class="ph"><div><div class="lbl">Orçamento</div><h2>${esc(p.numero)}</h2><div>${hoje()}</div></div>
+    <div style="text-align:right"><strong>${esc(pf.empresa||pf.nome||'Seu nome ou empresa')}</strong>${pf.empresa&&pf.nome?`<div>${esc(pf.nome)}</div>`:''}<div>${esc(pf.telefone||'')}</div><div>${esc(pf.cidade||'')}</div></div></div>
+   ${!pf.nome&&!pf.empresa?`<p class="small" style="color:#94620F">Coloque seu nome e telefone em "Preços e seus dados" para aparecerem aqui.</p>`:''}
+   <div><div class="lbl">Cliente</div><div>${esc(p.cliente||'—')}</div><div>${esc(p.endereco||'')}</div></div>
+   <div><div class="lbl">Serviço</div><p>${esc(descServico(p,R))}</p></div>
+   <table><tbody>
+    <tr><td>Mão de obra</td><td>${brl(O.mo)}</td></tr>
+    <tr><td>${o.incluirMaterial?'Material':'Material (por conta do cliente, lista em anexo)'}</td><td>${o.incluirMaterial?brl(O.matVenda):'—'}</td></tr>
+    ${o.desconto?`<tr><td>Desconto</td><td>− ${brl(o.desconto)}</td></tr>`:''}
+    <tr class="tot"><td>Total</td><td>${brl(O.total)}</td></tr></tbody></table>
+   <div class="grid2" style="gap:8px"><div><div class="lbl">Prazo</div>${plural(O.dias,'dia')} de trabalho</div><div><div class="lbl">Validade</div>${plural(o.validade,'dia')}</div></div>
+   <div><div class="lbl">Pagamento</div>${esc(o.pagamento)}</div>
+   ${o.observacoes?`<div><div class="lbl">Observações</div>${esc(o.observacoes)}</div>`:''}
+  </div>`;
+}
+function textoOrcamento(p,R){
+  const O=R.orc,o=O.o,pf=S.perfil;
+  let s=`*Orçamento ${p.numero}*\n`;
+  if(pf.empresa||pf.nome)s+=`${pf.empresa||pf.nome}${pf.telefone?' · '+pf.telefone:''}\n`;
+  s+=`\nCliente: ${p.cliente||'—'}\n`;if(p.endereco)s+=`Endereço: ${p.endereco}\n`;
+  s+=`\n*Serviço*\n${descServico(p,R)}\n\nMão de obra: ${brl(O.mo)}\n`;
+  s+=o.incluirMaterial?`Material: ${brl(O.matVenda)}\n`:`Material: por conta do cliente (mando a lista)\n`;
+  if(o.desconto)s+=`Desconto: − ${brl(o.desconto)}\n`;
+  s+=`*Total: ${brl(O.total)}*\n\nPrazo: ${plural(O.dias,'dia')} de trabalho\nPagamento: ${o.pagamento}\nValidade: ${plural(o.validade,'dia')}`;
+  if(o.observacoes)s+=`\n\nObs.: ${o.observacoes}`;
+  return s;
+}
+function htmlOrcamento(p,R){
+  const O=R.orc,o=O.o,pf=S.perfil;
+  const mat=o.incluirMaterial?'':`<h3>Lista de material</h3><table>${R.itens.filter(i=>i.sel).map(i=>`<tr><td>${esc(i.nome)}</td><td>${fmt(i.qtd,2)} ${esc(i.un)}</td></tr>`).join('')}</table>`;
+  return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Orçamento ${esc(p.numero)}</title>
+<style>body{font-family:Arial,Helvetica,sans-serif;color:#1B242D;max-width:720px;margin:32px auto;padding:0 20px;font-size:14px;line-height:1.5}
+.h{display:flex;justify-content:space-between;gap:16px;border-bottom:3px solid #A9531D;padding-bottom:12px;margin-bottom:18px}
+h1{margin:0;font-size:26px}h3{margin:22px 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:#66717C}
+table{width:100%;border-collapse:collapse}td{padding:7px 0;border-bottom:1px solid #E1E5E9}td:last-child{text-align:right;white-space:nowrap}
+.t td{font-weight:bold;font-size:18px;color:#A9531D;border:0}.ass{margin-top:60px;display:flex;gap:40px}.ass div{flex:1;border-top:1px solid #999;padding-top:6px;text-align:center;color:#66717C}</style></head><body>
+<div class="h"><div><div style="color:#66717C;font-size:12px;letter-spacing:.08em;text-transform:uppercase">Orçamento</div><h1>${esc(p.numero)}</h1><div>${hoje()}</div></div>
+<div style="text-align:right"><strong>${esc(pf.empresa||pf.nome||'')}</strong><div>${esc(pf.empresa&&pf.nome?pf.nome:'')}</div><div>${esc(pf.telefone||'')}</div><div>${esc(pf.cidade||'')}</div></div></div>
+<h3>Cliente</h3><div>${esc(p.cliente||'—')}</div><div>${esc(p.endereco||'')}</div>
+<h3>Serviço</h3><p>${esc(descServico(p,R))}</p>
+<h3>Valores</h3><table><tr><td>Mão de obra</td><td>${brl(O.mo)}</td></tr><tr><td>${o.incluirMaterial?'Material':'Material por conta do cliente'}</td><td>${o.incluirMaterial?brl(O.matVenda):'—'}</td></tr>
+${o.desconto?`<tr><td>Desconto</td><td>− ${brl(o.desconto)}</td></tr>`:''}<tr class="t"><td>Total</td><td>${brl(O.total)}</td></tr></table>
+<h3>Condições</h3><div>Prazo: ${plural(O.dias,'dia')} de trabalho</div><div>Pagamento: ${esc(o.pagamento)}</div><div>Validade: ${plural(o.validade,'dia')}</div>
+${o.observacoes?`<h3>Observações</h3><p>${esc(o.observacoes)}</p>`:''}${mat}
+<div class="ass"><div>${esc(pf.nome||pf.empresa||'Eletricista')}</div><div>${esc(p.cliente||'Cliente')}</div></div></body></html>`;
+}
+
+/* ---- Configurações ---- */
+function vConfig(){
+  const pf=S.perfil,op=Object.assign({},ORC_PADRAO,pf.orcPadrao||{});let cat='';
+  const precos=CAT.map(([id,c,nome,un])=>{let h='';if(c!==cat){cat=c;h+=`<h3>${esc(c)}</h3>`}
+    const mud=pf.precos?.[id]!=null&&pf.precos[id]!==DEF_PRECO[id];
+    return h+`<div class="pr"><span>${esc(nome)} <span class="muted small">/ ${un}${mud?' · seu preço':''}</span></span><input type="text" inputmode="decimal" id="cfg_${id}" data-f="preco:${id}" value="${inp(preco(id))}" aria-label="Preço de ${esc(nome)}"></div>`}).join('');
+  const cp=(k,rot)=>`<label class="f"><span>${rot}</span><input type="text" inputmode="decimal" id="op_${k}" data-f="op:${k}" value="${inp(op[k])}"></label>`;
+  return `<button class="btn ghost small" data-go="home" style="align-self:flex-start;padding-left:0">← Projetos</button>
+  <h1>Preços e seus dados</h1>
+  <div class="og">
+   <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+    <div class="panel"><h2>Seus dados no orçamento</h2><div class="grid2">
+     <label class="f"><span>Seu nome</span><input type="text" id="pf_nome" data-f="pf:nome" value="${esc(pf.nome)}"></label>
+     <label class="f"><span>Empresa (opcional)</span><input type="text" id="pf_emp" data-f="pf:empresa" value="${esc(pf.empresa)}"></label>
+     <label class="f"><span>Telefone / WhatsApp</span><input type="tel" id="pf_tel" data-f="pf:telefone" value="${esc(pf.telefone)}"></label>
+     <label class="f"><span>Cidade</span><input type="text" id="pf_cid" data-f="pf:cidade" value="${esc(pf.cidade)}"></label></div></div>
+    <div class="panel"><h2>Seus valores de mão de obra</h2><p class="small muted">Valem para os projetos novos. Em cada projeto dá para mudar.</p><div class="grid2">
+     ${cp('valorPonto','Por ponto (R$)')}${cp('valorEspecial','Chuveiro ou ar (R$)')}${cp('valorQuadro','Montagem do quadro (R$)')}${cp('valorDiaria','Diária (R$)')}${cp('pontosDia','Pontos por dia')}${cp('valorAjudante','Diária do ajudante (R$)')}${cp('gastoDia','Transporte e comida por dia (R$)')}</div></div>
+    <div class="panel"><h2>Cópia de segurança</h2>
+     <p class="small muted">${Store.modo==='nuvem'?'Seus projetos ficam na sua conta. A cópia serve para levar tudo para outro lugar.':'Seus projetos ficam guardados só neste aparelho. Baixe uma cópia de vez em quando para não perder nada se trocar de celular ou limpar o navegador.'}</p>
+     <div class="row"><button class="btn" data-act="backup">Baixar cópia</button><button class="btn" data-act="restaurar">Restaurar cópia</button></div>
+     <input type="file" id="filebackup" accept="application/json,.json" hidden></div>
+   </div>
+   <div class="panel"><div class="row" style="justify-content:space-between"><h2>Tabela de preços</h2><button class="btn small" data-act="precosPadrao">Voltar aos preços de referência</button></div>
+    <p class="small muted">Os preços de referência são uma média de mercado. Coloque os preços da loja onde você compra.</p>
+    <div class="precos">${precos}</div></div>
+  </div>`;
+}
+
+/* ============ Planta: upload ============ */
+async function lerArquivo(file){
+  if(!file)return;const p=proj();if(!p)return;
+  try{
+    let canvas;
+    if(file.type==='application/pdf'||/\.pdf$/i.test(file.name)){toast('Abrindo o PDF…');canvas=await pdfParaCanvas(file)}
+    else if(file.type.startsWith('image/')){const url=await new Promise((ok,er)=>{const fr=new FileReader();fr.onload=()=>ok(fr.result);fr.onerror=er;fr.readAsDataURL(file)});
+      const im=await new Promise((ok,er)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=er;i.src=url});
+      canvas=document.createElement('canvas');canvas.width=im.naturalWidth;canvas.height=im.naturalHeight;canvas.getContext('2d').drawImage(im,0,0)}
+    else{toast('Envie uma imagem (foto ou print) ou um PDF.');return}
+    const img=comprimir(canvas);S.plantas[p.id]=img;delete S.dims[p.id];soltarDesenho(p);S.ai.status='';
+    if(!p.exemplo){p.temPlanta=true;salvar(p);enfileirar('pl_'+p.id,()=>Store.salvarPlanta(p.id,img))}
+    render();
+    if(S.ai.fn&&S.ai.img&&!p.comodos.length)toast('Planta recebida. Toque em "Ler planta" para a IA montar os cômodos.');
+  }catch(e){console.warn(e);toast('Não consegui abrir esse arquivo. Tente uma foto ou print da planta.')}
+}
+// planta nova ou removida: a escala e os retângulos desenhados deixam de valer (os cômodos e as medidas ficam)
+function soltarDesenho(p){delete p.escala;p.comodos.forEach(c=>delete c.px);S.desenho=null;S.pend=null}
+function comprimir(src){
+  let max=1500,q=0.75,out='';
+  for(let i=0;i<8;i++){const k=Math.min(1,max/Math.max(src.width,src.height));const c=document.createElement('canvas');c.width=Math.round(src.width*k);c.height=Math.round(src.height*k);
+    const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(src,0,0,c.width,c.height);out=c.toDataURL('image/jpeg',q);
+    if(out.length<235000)return out;if(q>0.5)q-=0.1;else{max*=0.8;q=0.7}}
+  return out;
+}
+function carregarScript(src){return new Promise((ok,er)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=er;document.head.appendChild(s)})}
+async function pdfParaCanvas(file){
+  const base='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/';
+  if(!window.pdfjsLib){await carregarScript(base+'pdf.min.js');await carregarScript(base+'pdf.worker.min.js')}
+  const buf=await file.arrayBuffer();const doc=await pdfjsLib.getDocument({data:buf}).promise;const pg=await doc.getPage(1);
+  const v0=pg.getViewport({scale:1});const vp=pg.getViewport({scale:Math.min(3,2000/Math.max(v0.width,v0.height))});
+  const c=document.createElement('canvas');c.width=vp.width;c.height=vp.height;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);
+  await pg.render({canvasContext:x,viewport:vp}).promise;return c;
+}
+function dataURLparaBlob(d){const[h,b]=d.split(',');const bin=atob(b);const a=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);return new Blob([a],{type:h.slice(5,h.indexOf(';'))})}
+
+/* ============ Leitura com IA ============ */
+async function lerIA(){
+  const p=proj(),img=S.plantas[p.id];if(!img||!S.ai.fn||S.ai.rodando)return;
+  const ctl=new AbortController();S.ai.ctl=ctl;S.ai.rodando=true;S.ai.status='Lendo a planta… isso leva de 20 segundos a 1 minuto.';atualizarPlanta();
+  const prompt=`Você é um eletricista projetista brasileiro. A imagem é a planta baixa de um imóvel.
+Identifique cada cômodo, com medidas em metros, e os pontos elétricos.
+- Se a planta tiver símbolos elétricos (tomadas, interruptores, pontos de luz, chuveiro, ar-condicionado), conte-os por cômodo.
+- Se não tiver, sugira a quantidade mínima pela NBR 5410: cozinha e área de serviço 1 tomada a cada 3,5 m de perímetro; banheiro 1 tomada; demais cômodos 1 tomada a cada 5 m de perímetro (1 se tiver até 6 m²); 1 ponto de luz e 1 interruptor por cômodo; chuveiro em cada banheiro.
+- Se as medidas não estiverem escritas, estime pela proporção (uma porta tem cerca de 0,80 m).
+- x e y são a posição do canto superior esquerdo do cômodo, em metros, a partir do canto superior esquerdo da planta, para montar o desenho 3D.
+Responda só com JSON neste formato:
+{"comodos":[{"nome":"Sala","tipo":"sala","largura":3.5,"comprimento":4.2,"x":0,"y":0,"tomadas":4,"interruptores":1,"luminarias":1,"chuveiro":0,"ar":0}],"observacoes":"frase curta sobre o que foi lido ou estimado"}
+"tipo" deve ser um destes: sala, quarto, cozinha, banheiro, servico, varanda, garagem, corredor, escritorio, outro.`;
+  try{
+    const res=await S.ai.fn.json(prompt,{images:dataURLparaBlob(img),signal:ctl.signal});
+    const lista=Array.isArray(res?.comodos)?res.comodos:[];
+    if(!lista.length)throw{code:'vazio'};
+    const n=v=>Math.max(0,Math.round(+v||0)),m=(v,d)=>{const x=+v;return isFinite(x)&&x>0.3&&x<60?Math.round(x*100)/100:d};
+    const cs=lista.slice(0,40).map((c,i)=>{const tipo=TIPOS[c.tipo]?c.tipo:'outro';
+      const r={id:uid(),nome:String(c.nome||TIPOS[tipo]||'Cômodo '+(i+1)).slice(0,40),tipo,largura:m(c.largura,3),comprimento:m(c.comprimento,3),
+        tomadas:n(c.tomadas),interruptores:n(c.interruptores),luminarias:n(c.luminarias),chuveiro:n(c.chuveiro),ar:n(c.ar)};
+      if(isFinite(+c.x)&&isFinite(+c.y)&&c.x!==null&&c.y!==null){r.x=+c.x;r.y=+c.y}return r});
+    if(cs.some((a,i)=>cs.some((b,j)=>j>i&&a.x!=null&&b.x!=null&&a.x<b.x+b.largura-0.3&&b.x<a.x+a.largura-0.3&&a.y<b.y+b.comprimento-0.3&&b.y<a.y+a.comprimento-0.3)))cs.forEach(c=>{delete c.x;delete c.y});
+    const antes=clone(p.comodos),qAntes=p.quadroEm;
+    p.comodos=cs;p.quadroEm=(cs.find(c=>c.tipo==='cozinha'||c.tipo==='servico')||cs[0]).id;p.mat={};salvar(p);
+    S.ai.status=`Pronto: ${plural(cs.length,'cômodo')} encontrados.`+(res.observacoes?' '+String(res.observacoes).slice(0,300):'')+' Confira as medidas e os pontos abaixo.';
+    if(antes.length)toast('Cômodos trocados pelos da leitura.',{rotulo:'Desfazer',fn:()=>{p.comodos=antes;p.quadroEm=qAntes;salvar(p);render()}});
+  }catch(e){
+    const c=e&&e.code;
+    S.ai.status=c==='cancelled'?'Leitura parada.':c==='not_granted'||c==='sampling_disabled'?'A leitura com IA não foi liberada. Você pode montar os cômodos à mão.':
+      c==='rate_limited'?'Muitos pedidos seguidos. Espere um pouco e tente de novo.':c==='image_rejected'?'A imagem não foi aceita. Tente uma foto mais nítida ou um print.':
+      c==='invalid_json'||c==='vazio'?'Não consegui entender essa planta. Tente uma imagem mais nítida, ou use um modelo pronto.':'Deu um problema na leitura. Tente de novo em instantes.';
+    if(c==='not_granted'||c==='sampling_disabled')S.ai.fn=null;
+  }finally{S.ai.rodando=false;S.ai.ctl=null;render()}
+}
+function atualizarPlanta(){if(S.view==='projeto'&&S.aba==='planta')render()}
+
+/* ============ Eventos ============ */
+document.addEventListener('click',async e=>{
+  const go=e.target.closest('[data-go]');if(go){S.view=go.dataset.go;S.novo=false;S.apagar=false;render();scrollTo(0,0);return}
+  const op=e.target.closest('[data-open]');if(op){abrir(op.dataset.open);return}
+  const ab=e.target.closest('[data-aba]');if(ab){S.aba=ab.dataset.aba;S.desenho=null;S.pend=null;render();return}
+  const b=e.target.closest('[data-act]');if(!b)return;
+  const a=b.dataset.act,p=proj();
+  switch(a){
+    case 'novo':S.novo=true;render();setTimeout(()=>$('#n_nome')?.focus(),0);break;
+    case 'cancelanovo':S.novo=false;render();break;
+    case 'novoDoExemplo':S.view='home';S.novo=true;render();setTimeout(()=>$('#n_nome')?.focus(),0);break;
+    case 'trocarPlanta':$('#fileplanta').click();break;
+    case 'removerPlanta':delete S.plantas[p.id];delete S.dims[p.id];soltarDesenho(p);S.ai.status='';if(!p.exemplo){p.temPlanta=false;salvar(p);enfileirar('pl_'+p.id,()=>Store.salvarPlanta(p.id,null))}render();break;
+    case 'desenhar':S.desenho=mpp(p)?'comodo':'escala';S.pend=null;render();$('.drawbar')?.scrollIntoView({block:'start',behavior:'smooth'});break;
+    case 'modoDesenho':if(b.disabled)break;S.desenho=b.dataset.v;S.pend=null;render();break;
+    case 'concluirDesenho':S.desenho=null;S.pend=null;render();break;
+    case 'cancelarPend':S.pend=null;render();break;
+    case 'addDesenho':criarDoDesenho(b.dataset.tipo);break;
+    case 'lerIA':lerIA();break;
+    case 'pararIA':S.ai.ctl?.abort();break;
+    case 'addComodo':{const c=novoComodo('Cômodo '+(p.comodos.length+1),'quarto',3,3);p.comodos.push(c);salvar(p);render();setTimeout(()=>{const el=document.getElementById('c_'+c.id+'_nome');el?.focus();el?.select()},0);break}
+    case 'delComodo':{const i=p.comodos.findIndex(c=>c.id===b.dataset.c);const rem=p.comodos.splice(i,1)[0];if(p.quadroEm===rem.id)p.quadroEm=null;salvar(p);render();
+      toast(`${rem.nome} removido.`,{rotulo:'Desfazer',fn:()=>{p.comodos.splice(i,0,rem);salvar(p);render()}});break}
+    case 'mais':case 'menos':{const c=p.comodos.find(x=>x.id===b.dataset.c);const k=b.dataset.k;c[k]=Math.max(0,(+c[k]||0)+(a==='mais'?1:-1));salvar(p);render();break}
+    case 'norma':{const antes=clone(p.comodos);p.comodos.forEach(c=>Object.assign(c,sugerirNorma(c),{ar:c.ar||0}));salvar(p);render();
+      toast('Pontos preenchidos pelo mínimo da NBR 5410.',{rotulo:'Desfazer',fn:()=>{p.comodos=antes;salvar(p);render()}});break}
+    case 'apagar':S.apagar=true;render();break;
+    case 'apagarNao':S.apagar=false;render();break;
+    case 'apagarSim':{const id=p.id;S.projetos=S.projetos.filter(x=>x.id!==id);clearTimeout(timers[id]);S.apagar=false;S.view='home';render();enfileirar(id,()=>Store.apagarProjeto(id));toast('Projeto apagado.');break}
+    case 'vista':if(b.dataset.v==='cima'){V3.ph=0.02;V3.th=Math.PI/2}else{V3.ph=0.95;V3.th=0.9}desenhar();break;
+    case 'marcar':{const on=b.dataset.v==='1';const R=resumo(p);p.mat=p.mat||{};R.itens.forEach(i=>{if(i.extra!=null)p.extras[i.extra].sel=on;else{p.mat[i.id]=Object.assign({},p.mat[i.id],{sel:on})}});salvar(p);render();break}
+    case 'resetQtd':if(p.mat[b.dataset.id])delete p.mat[b.dataset.id].qtd;salvar(p);render();break;
+    case 'delExtra':p.extras.splice(+b.dataset.i,1);salvar(p);render();break;
+    case 'copiar':{const t=$(b.dataset.alvo==='lista'?'#txt_lista':'#txt_orc').textContent;try{await navigator.clipboard.writeText(t);toast('Texto copiado. Agora é só colar no WhatsApp.')}
+      catch(err){const el=$(b.dataset.alvo==='lista'?'#txt_lista':'#txt_orc');el.hidden=false;const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r);toast('Texto selecionado. Use Copiar do seu aparelho.')}break}
+    case 'baixarCSV':{const R=resumo(p);const linhas=[['Material','Quantidade','Unidade','Preço unitário','Subtotal'],...R.itens.filter(i=>i.sel).map(i=>[i.nome,inp(i.qtd),i.un,inp(i.preco),inp(i.qtd*i.preco)])];
+      const csv='﻿'+linhas.map(l=>l.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(';')).join('\n');baixar(`Material - ${p.nome}.csv`,csv);break}
+    case 'baixarOrc':baixar(`Orçamento ${p.numero} - ${p.cliente||p.nome}.html`,htmlOrcamento(p,resumo(p)));break;
+    case 'modo':p.orc.modo=b.dataset.v;salvar(p);render();break;
+    case 'backup':baixarBackup();break;
+    case 'restaurar':$('#filebackup').click();break;
+    case 'precosPadrao':S.perfil.precos={};salvarPerfil();render();toast('Preços de referência restaurados.');break;
+  }
+});
+async function baixar(nome,dados){
+  nome=nome.replace(/[\\/:*?"<>|]/g,'-');
+  if(S.dl){try{await S.dl.save({filename:nome,data:dados})}catch(e){if(e&&e.code!=='declined')toast('Não foi possível baixar o arquivo aqui.')}return}
+  try{const tipo=/\.csv$/.test(nome)?'text/csv;charset=utf-8':/\.json$/.test(nome)?'application/json':'text/html;charset=utf-8';
+    const u=URL.createObjectURL(new Blob([dados],{type:tipo}));const a=document.createElement('a');a.href=u;a.download=nome;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),5000)}
+  catch(e){toast('Não foi possível baixar o arquivo aqui.')}
+}
+async function baixarBackup(){
+  const plantas={};for(const p of S.projetos){const img=S.plantas[p.id]||(p.temPlanta?await Store.lerPlanta(p.id).catch(()=>null):null);if(img)plantas[p.id]=img}
+  const d=new Date().toISOString().slice(0,10);
+  baixar(`Ponto a Ponto - copia ${d}.json`,JSON.stringify({app:'ponto-a-ponto',versao:1,data:d,perfil:S.perfil,projetos:S.projetos,plantas}));
+}
+async function restaurarBackup(file){
+  try{const o=JSON.parse(await file.text());if(o.app!=='ponto-a-ponto'||!Array.isArray(o.projetos))throw 0;
+    if(o.perfil){S.perfil=Object.assign(S.perfil,o.perfil);salvarPerfil()}
+    o.projetos.filter(p=>p&&p.id).forEach(p=>{p.orc=Object.assign({},ORC_PADRAO,p.orc||{});S.projetos=S.projetos.filter(x=>x.id!==p.id);S.projetos.push(p);enfileirar(p.id,()=>Store.salvarProjeto(p))});
+    Object.entries(o.plantas||{}).forEach(([id,img])=>{S.plantas[id]=img;enfileirar('pl_'+id,()=>Store.salvarPlanta(id,img))});
+    toast(`${plural(o.projetos.length,'projeto')} restaurado${o.projetos.length===1?'':'s'}.`);render();
+  }catch(e){toast('Esse arquivo não é uma cópia do Ponto a Ponto.')}
+}
+function abrir(id){S.atual=id;S.view='projeto';S.aba='planta';S.ai.status='';S.apagar=false;S.desenho=null;S.pend=null;
+  const p=proj();if(p&&!p.exemplo&&p.temPlanta&&!S.plantas[id])Store.lerPlanta(id).then(img=>{if(img){S.plantas[id]=img;if(S.atual===id&&S.aba==='planta')render()}}).catch(()=>{});
+  render();scrollTo(0,0)}
+
+document.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.id==='modelo'&&t.value){const p=proj();const antes=clone(p.comodos),qa=p.quadroEm;p.comodos=MODELOS[t.value].c.map(a=>novoComodo(...a));p.quadroEm=p.comodos[1]?.id||null;p.mat={};salvar(p);render();
+    toast(`Modelo "${MODELOS[t.value].nome}" aplicado.`,antes.length?{rotulo:'Desfazer',fn:()=>{p.comodos=antes;p.quadroEm=qa;salvar(p);render()}}:null);return}
+  if(t.id==='fileplanta'){lerArquivo(t.files[0]);t.value='';return}
+  if(t.id==='filebackup'){if(t.files[0])restaurarBackup(t.files[0]);t.value='';return}
+  if(t.dataset.camada){V3.camadas[t.dataset.camada]=t.checked;aplicarCamadas();desenhar();return}
+  const f=t.dataset.f;if(!f)return;
+  const val=t.type==='checkbox'?t.checked:t.value;const parts=f.split(':');const p=proj();
+  switch(parts[0]){
+    case 'p':p[parts[1]]=String(val).trim();salvar(p);break;
+    case 'c':{const c=p.comodos.find(x=>x.id===parts[1]);const k=parts[2];c[k]=(k==='largura'||k==='comprimento')?Math.max(0.3,Math.min(60,num(val)||0.3)):val;
+      if(k==='largura'||k==='comprimento')delete c.px;salvar(p);break}
+    case 'quadro':p.quadroEm=val;salvar(p);break;
+    case 'm':{p.mat=p.mat||{};const o=Object.assign({},p.mat[parts[1]]);if(parts[2]==='sel')o.sel=val;else o.qtd=Math.max(0,num(val));p.mat[parts[1]]=o;salvar(p);break}
+    case 'x':{const x=p.extras[+parts[1]];if(parts[2]==='sel')x.sel=val;else x[parts[2]]=Math.max(0,num(val));salvar(p);break}
+    case 'preco':S.perfil.precos=S.perfil.precos||{};S.perfil.precos[parts[1]]=Math.max(0,num(val));salvarPerfil();break;
+    case 'o':{const k=parts[1];const o=p.orc;
+      if(typeof val==='boolean')o[k]=val;else if(k==='pagamento'||k==='observacoes')o[k]=val;
+      else if(k==='diasManual'){const d=Math.round(num(val));o[k]=d>0?d:null}
+      else o[k]=Math.max(0,num(val));
+      if(k==='pontosDia'&&!o[k])o[k]=1;salvar(p);break}
+    case 'envio':S.envio[parts[1]]=val;break;
+    case 'pf':S.perfil[parts[1]]=String(val).trim();salvarPerfil();break;
+    case 'op':S.perfil.orcPadrao=Object.assign({},S.perfil.orcPadrao||{},{[parts[1]]:Math.max(0,num(val))});salvarPerfil();break;
+  }
+  render();
+});
+document.addEventListener('submit',e=>{
+  e.preventDefault();
+  if(e.target.id==='fnovo'){const p=novoProjeto({nome:$('#n_nome').value.trim(),cliente:$('#n_cliente').value.trim(),telefone:$('#n_tel').value.trim(),endereco:$('#n_end').value.trim()});
+    S.projetos.push(p);S.novo=false;salvar(p);abrir(p.id);return}
+  if(e.target.id==='fescala'){const p=proj(),m=num($('#pend_m').value),pd=S.pend;if(!(m>0)||!pd){toast('Escreva quanto a linha mede, em metros. Exemplo: 4,20');$('#pend_m')?.focus();return}
+    p.escala={x1:pd.a.x,y1:pd.a.y,x2:pd.b.x,y2:pd.b.y,m};const k=mpp(p);
+    p.comodos.forEach(c=>{if(c.px){c.largura=r05(c.px.w*k);c.comprimento=r05(c.px.h*k);c.x=Math.round(c.px.x*k*100)/100;c.y=Math.round(c.px.y*k*100)/100}});
+    S.pend=null;S.desenho='comodo';salvar(p);render();toast('Escala salva. Agora arraste sobre cada cômodo.');return}
+  if(e.target.id==='fcomodo'){const n=($('#pend_nome')?.value||'').trim();if(n)criarDoDesenho(adivinharTipo(n));return}
+  if(e.target.id==='fextra'){const p=proj();const nome=$('#ex_nome').value.trim();if(!nome){$('#ex_nome').focus();return}
+    p.extras=p.extras||[];p.extras.push({nome,qtd:num($('#ex_qtd').value)||1,un:$('#ex_un').value.trim()||'un',preco:num($('#ex_preco').value),sel:true});salvar(p);render();setTimeout(()=>$('#ex_nome')?.focus(),0)}
+});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='drop')$('#fileplanta').click()});
+document.addEventListener('dragover',e=>{const d=e.target.closest&&e.target.closest('#drop');if(d){e.preventDefault();d.classList.add('over')}});
+document.addEventListener('dragleave',e=>{const d=e.target.closest&&e.target.closest('#drop');if(d)d.classList.remove('over')});
+document.addEventListener('drop',e=>{const d=e.target.closest&&e.target.closest('#drop');if(d){e.preventDefault();lerArquivo(e.dataTransfer.files[0])}});
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(S.view==='projeto'&&S.aba==='3d'&&V3.r)construirCena(proj())})}catch(e){}
+
+/* ============ Início ============ */
+(async function(){
+  render();
+  const capIA=(async()=>{if(!window.claude||!claude.use)return;
+    try{const fn=await claude.use('sample');if(fn){S.ai.fn=fn;const lim=await fn.limits().catch(()=>null);S.ai.img=!!(lim&&lim.images)}}catch(e){}
+    try{S.dl=await claude.use('downloads')}catch(e){}
+    if(S.carregado)render()})();
+  await Store.init();
+  try{const d=await Store.carregar();
+    if(d.perfil)S.perfil=Object.assign(S.perfil,d.perfil);
+    S.projetos=(d.projetos||[]).filter(p=>p&&p.id).map(p=>Object.assign({comodos:[],mat:{},extras:[],orc:{}},p,{orc:Object.assign({},ORC_PADRAO,p.orc||{})}));
+  }catch(e){console.warn(e);toast('Não consegui carregar seus projetos agora. Recarregue a página em instantes.')}
+  S.carregado=true;render();await capIA;
+})();
+</script>
+
+</body>
+</html>
