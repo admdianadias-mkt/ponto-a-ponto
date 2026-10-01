@@ -215,6 +215,10 @@ pre.msg{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--bg);border-
 .paper .p24{display:inline-block;background:#262626;color:#FFD52E;font-size:11px;font-weight:700;border-radius:4px;padding:1px 6px;margin-top:4px}
 .paper .tot td:last-child{padding-right:10px}
 
+#trava{position:fixed;inset:0;z-index:100;background:var(--brand-bg);display:flex;align-items:center;justify-content:center;padding:16px}
+#trava[hidden]{display:none}
+.trava-box{background:var(--surface);color:var(--ink);border-radius:14px;border-top:6px solid var(--brand-y);padding:24px;width:100%;max-width:360px;display:flex;flex-direction:column;gap:12px}
+
 /* config */
 .precos{display:flex;flex-direction:column}
 .precos .pr{display:grid;grid-template-columns:minmax(0,1fr) 130px;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
@@ -249,6 +253,15 @@ pre.msg{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--bg);border-
 </div></header>
 <main class="wrap" id="app"><div class="load"><div class="spin"></div>Carregando seus projetos…</div></main>
 <div id="toast" hidden></div>
+<div id="trava" hidden><form id="ftrava" class="trava-box">
+  <svg width="64" height="64" viewBox="0 0 40 40" aria-hidden="true" style="align-self:center"><circle cx="20" cy="20" r="20" fill="#FFD52E"/><circle cx="20" cy="20" r="14.5" fill="none" stroke="#262626" stroke-width="1.4"/><rect x="15.2" y="8.5" width="2.6" height="6" rx="1.2" fill="#262626"/><rect x="22.2" y="8.5" width="2.6" height="6" rx="1.2" fill="#262626"/><path d="M12.5 14h15v4.5a7.5 7.5 0 0 1-5 7v2.5h-5v-2.5a7.5 7.5 0 0 1-5-7z" fill="#262626"/><path d="M20 28v6" stroke="#262626" stroke-width="1.6" stroke-linecap="round"/></svg>
+  <h1 style="text-align:center">Ponto a Ponto</h1>
+  <p class="muted" style="text-align:center;margin-top:-6px">Vitor Dias · Elétrica</p>
+  <label class="f"><span>Senha</span><input type="password" id="senha" autocomplete="current-password" required></label>
+  <label class="check small"><input type="checkbox" id="lembrar" checked>Lembrar neste aparelho</label>
+  <button class="btn primary" type="submit">Entrar</button>
+  <p id="trava_msg" class="small" style="color:var(--bad);min-height:1.2em" aria-live="polite"></p>
+</form></div>
 <input type="file" id="fileplanta" accept="image/*,application/pdf" hidden>
 
 <script>
@@ -1135,8 +1148,23 @@ document.addEventListener('change',e=>{
   }
   render();
 });
+/* ============ Senha do site (só fora do Claude) ============ */
+// impressões SHA-256 de "ponto-a-ponto:" + senha; a senha em si não fica no código
+const SENHAS=['1200308f6d9f993e2bfa0760183cad79de127863a5c64d4fff78614a90f42664','755112bbbb1dcc9a3d0f5f035df76f8cc9ab30fef8e262c890bd02631719fb91'];
+async function impressao(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('ponto-a-ponto:'+s));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+function travar(){if(window.claude)return;let ok=null;try{ok=localStorage.getItem('pap_ok')||sessionStorage.getItem('pap_ok')}catch(e){}
+  if(SENHAS.includes(ok))return;$('#trava').hidden=false;setTimeout(()=>$('#senha')?.focus(),50)}
+async function destravar(){
+  const msg=$('#trava_msg');let h='';try{h=await impressao($('#senha').value)}catch(e){msg.textContent='Este navegador não abriu a trava. Tente pelo Chrome ou Safari.';return}
+  if(!SENHAS.includes(h)){msg.textContent='Senha errada. Confira e tente de novo.';$('#senha').select();return}
+  try{($('#lembrar').checked?localStorage:sessionStorage).setItem('pap_ok',h)}catch(e){}
+  $('#trava').hidden=true;$('#senha').value='';
+}
+travar();
+
 document.addEventListener('submit',e=>{
   e.preventDefault();
+  if(e.target.id==='ftrava'){destravar();return}
   if(e.target.id==='fnovo'){const p=novoProjeto({nome:$('#n_nome').value.trim(),cliente:$('#n_cliente').value.trim(),telefone:$('#n_tel').value.trim(),endereco:$('#n_end').value.trim()});
     S.projetos.push(p);S.novo=false;salvar(p);abrir(p.id);return}
   if(e.target.id==='fescala'){const p=proj(),m=num($('#pend_m').value),pd=S.pend;if(!(m>0)||!pd){toast('Escreva quanto a linha mede, em metros. Exemplo: 4,20');$('#pend_m')?.focus();return}
