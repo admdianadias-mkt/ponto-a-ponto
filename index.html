@@ -215,6 +215,10 @@ pre.msg{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--bg);border-
 .paper .p24{display:inline-block;background:#262626;color:#FFD52E;font-size:11px;font-weight:700;border-radius:4px;padding:1px 6px;margin-top:4px}
 .paper .tot td:last-child{padding-right:10px}
 
+.obrig{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--copper-ink);background:var(--copper);border-radius:4px;padding:1px 6px;margin-left:4px}
+.opc{font-size:12px;font-style:normal;color:var(--muted);font-weight:400;margin-left:4px}
+.erro{font-style:normal;font-size:13px;color:var(--bad)}
+input.invalido{border-color:var(--bad)}
 #trava{position:fixed;inset:0;z-index:100;background:var(--brand-bg);display:flex;align-items:center;justify-content:center;padding:16px}
 #trava[hidden]{display:none}
 .trava-box{background:var(--surface);color:var(--ink);border-radius:14px;border-top:6px solid var(--brand-y);padding:24px;width:100%;max-width:360px;display:flex;flex-direction:column;gap:12px}
@@ -521,12 +525,12 @@ function vHome(){
   return `
   <section class="hello"><div><h1>Seus projetos</h1><p>Suba a planta da obra, confira os pontos em 3D, gere a lista de material e mande o orçamento pelo WhatsApp.</p></div>
     <button class="btn primary" data-act="novo" id="btnnovo">+ Novo projeto</button></section>
-  ${S.novo?`<form class="panel" id="fnovo"><h2>Novo projeto</h2>
+  ${S.novo?`<form class="panel" id="fnovo" novalidate><h2>Novo projeto</h2>
     <div class="newform">
-      <label class="f"><span>Nome da obra</span><input type="text" id="n_nome" placeholder="Ex.: Reforma apto 302" required></label>
-      <label class="f"><span>Cliente</span><input type="text" id="n_cliente" placeholder="Nome do cliente"></label>
-      <label class="f"><span>WhatsApp do cliente</span><input type="tel" id="n_tel" placeholder="(11) 98888-7777"></label>
-      <label class="f"><span>Endereço</span><input type="text" id="n_end" placeholder="Rua, número, bairro"></label>
+      <label class="f"><span>Nome da obra <b class="obrig">obrigatório</b></span><input type="text" id="n_nome" placeholder="Ex.: Reforma apto 302" required aria-required="true" aria-describedby="n_nome_erro"><em class="erro" id="n_nome_erro" hidden>Dê um nome para a obra.</em></label>
+      <label class="f"><span>Cliente <i class="opc">opcional</i></span><input type="text" id="n_cliente" placeholder="Nome do cliente"></label>
+      <label class="f"><span>WhatsApp do cliente <i class="opc">opcional</i></span><input type="tel" id="n_tel" placeholder="(11) 98888-7777"></label>
+      <label class="f"><span>Endereço <i class="opc">opcional</i></span><input type="text" id="n_end" placeholder="Rua, número, bairro"></label>
     </div>
     <div class="row"><button class="btn primary" type="submit">Criar e subir a planta</button><button class="btn ghost" type="button" data-act="cancelanovo">Cancelar</button></div></form>`:''}
   ${ps.length?`<div class="kpis">
@@ -1165,7 +1169,8 @@ travar();
 document.addEventListener('submit',e=>{
   e.preventDefault();
   if(e.target.id==='ftrava'){destravar();return}
-  if(e.target.id==='fnovo'){const p=novoProjeto({nome:$('#n_nome').value.trim(),cliente:$('#n_cliente').value.trim(),telefone:$('#n_tel').value.trim(),endereco:$('#n_end').value.trim()});
+  if(e.target.id==="fnovo"){const nm=$("#n_nome");if(!nm.value.trim()){$("#n_nome_erro").hidden=false;nm.classList.add("invalido");nm.focus();return}
+    const p=novoProjeto({nome:$('#n_nome').value.trim(),cliente:$('#n_cliente').value.trim(),telefone:$('#n_tel').value.trim(),endereco:$('#n_end').value.trim()});
     S.projetos.push(p);S.novo=false;salvar(p);abrir(p.id);return}
   if(e.target.id==='fescala'){const p=proj(),m=num($('#pend_m').value),pd=S.pend;if(!(m>0)||!pd){toast('Escreva quanto a linha mede, em metros. Exemplo: 4,20');$('#pend_m')?.focus();return}
     p.escala={x1:pd.a.x,y1:pd.a.y,x2:pd.b.x,y2:pd.b.y,m};const k=mpp(p);
@@ -1175,6 +1180,7 @@ document.addEventListener('submit',e=>{
   if(e.target.id==='fextra'){const p=proj();const nome=$('#ex_nome').value.trim();if(!nome){$('#ex_nome').focus();return}
     p.extras=p.extras||[];p.extras.push({nome,qtd:num($('#ex_qtd').value)||1,un:$('#ex_un').value.trim()||'un',preco:num($('#ex_preco').value),sel:true});salvar(p);render();setTimeout(()=>$('#ex_nome')?.focus(),0)}
 });
+document.addEventListener('input',e=>{if(e.target.id==='n_nome'&&e.target.value.trim()){e.target.classList.remove('invalido');const m=$('#n_nome_erro');if(m)m.hidden=true}});
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='drop')$('#fileplanta').click()});
 document.addEventListener('dragover',e=>{const d=e.target.closest&&e.target.closest('#drop');if(d){e.preventDefault();d.classList.add('over')}});
 document.addEventListener('dragleave',e=>{const d=e.target.closest&&e.target.closest('#drop');if(d)d.classList.remove('over')});
